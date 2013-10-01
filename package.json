@@ -1,0 +1,10 @@
+{
+    "name": "goserver",
+    "description": "Start of a go server using websockets",
+    "homepage": "http://example.org",
+    "copyright": "Copyright © 2000, Shammah Chancellor",
+    "authors": [
+	"Shammah Chancellor"
+    ],
+    "dependencies": { "vibe-d": "~master" },
+}
