@@ -73,6 +73,7 @@ ServerConnection.prototype.doSend = function(message)
     this.websocket.send(JSON.stringify(message));
 }
 
+/*
 ServerConnection.prototype.Join = function(channel)
 {
     this.doSend(["JOIN", channel]);
@@ -86,7 +87,7 @@ ServerConnection.prototype.Nick = function(newName)
 ServerConnection.prototype.Message = function(channel, msg)
 {
     this.doSend(["MSG", channel, msg]);
-}
+}*/
 
 function ServerConnection(wsUri, inProtocol) 
 {

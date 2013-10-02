@@ -1,76 +1,128 @@
-import vibe.d;
-import vibe.core.core;
-import vibe.core.driver;
-import vibe.http.websockets;
-import std.container;
-import std.stdio;
-import core.time;
-import vibe.stream.ssl;
-import vibe.core.concurrency;
-import vibe.core.log;
-import std.conv;
-import vibe.data.json;
+private import vibe.d;
+private import core.time;
+private import vibe.core.concurrency;
+private import std.conv;
+private import std.stdio;
+private import std.traits;
+private import vibe.data.json;
 
-import Channels;
-import ConnectionInfo;
+private import Channels;
+private import ConnectionInfo;
 
-public alias immutable(string)[] MessageType;
+alias immutable(string)[] MessageType;
 
-public enum MessageTypes : string
+class MessageHandler
 {
-  kJoin = "JOIN",
-    kPart = "PART",
-    kTell = "TELL",
-    kWho = "WHO",
-    kNick = "NICK",
-    kMsg = "MSG",
-    kQuit = "QUIT"
-    }
+  private ConnectionInfo ci;
 
-void handleMessage( ConnectionInfo ci, MessageType m)
-{
-  enforce(m.length > 1, "Invalid message");
+  this(ConnectionInfo _ci)
+  {
+    ci = _ci;
+  }
+
+  void handleMessage(Json msg)
+  {
+    string cmd = msg[0].get!string();
+    switch( cmd )
+      {
+	/*
+	  Abuse the runtime-reflextions to delegate out 
+	*/
+	foreach(memberFunc; __traits(allMembers, MessageHandler) )
+	  {
+	    static if ( memberFunc.startsWith("cmd") )
+	      {
+	      case memberFunc[3..$]:
+		alias ParameterTypeTuple!(MemberFunctionsTuple!(MessageHandler, memberFunc)) ArgTypes;
+		enforce(ArgTypes.length + 1 == msg.length, "Improper number of arguments");
+		ArgTypes args;
+		foreach(i, arg; ArgTypes)
+		  {
+		    args[i] = (msg[i+1]).get!arg();
+		  }
+		MemberFunctionsTuple!(MessageHandler, memberFunc)[0](args);
+		break;
+	      }
+	  }
+      default:
+	enforce(false, "Unsupported command!");
+	break;
+      }
+  }
+
+  static void outputJavascript(HTTPServerRequest req,
+			       HTTPServerResponse res)
+  {
+
+    auto writer = res.bodyWriter();
+    /*
+      Abuse the runtime-reflextions output stub functions we need.
+    */
+    foreach(memberFunc; __traits(allMembers, MessageHandler) )
+      {
+	static if ( memberFunc.startsWith("cmd") )
+	  {
+	    //alias ParameterTypeTuple!(MemberFunctionsTuple!(MessageHandler, memberFunc)) ArgTypes;
+	    alias ParameterIdentifierTuple!(MemberFunctionsTuple!(MessageHandler, memberFunc)) ArgNames;
+		
+	    writer.write("ServerConnection.prototype."); 
+	    writer.write(memberFunc[3..$]);
+	    writer.write(" = function(");
+		  
+	    foreach(i, arg; ArgNames)
+	      {
+		writer.write(arg);
+		if( i != ArgNames.length - 1)
+		  writer.write(",");
+	      }
+
+	    writer.write(") {  this.doSend(['"); 
+	    writer.write(memberFunc[3..$]); 
+	    writer.write("',");
+
+	    foreach(i, arg; ArgNames)
+	      {
+		writer.write(arg);
+		if( i != ArgNames.length - 1)
+		  writer.write(",");
+	      }
+	    writer.write("]);};");
+	  }
+      }
+  }
+
+  void cmdJoin(string channel){
+    writefln("%s: Joined channel %s", ci.username, channel);
+    ci.send(["JOIN", channel]);
+    subscribeToChannel( ci, channel );
+  }
+    
+  void cmdPart(string channel)
+  {
+    writefln("%s: Parted channel %s", ci.username,channel);
+    ci.send(["PART", channel]);
+    unsubscribeToChannel( ci, channel );
+  }
+
+  void cmdNick(string newName)
+  {
+    writefln("%s: Changed name to %s ", ci.username, newName);
+    ci.username = newName;
+  }
+
+  void cmdMsg(string channel, string message)
+  {
+    writefln("%s: Sent message to #%s: %s", ci.username, channel, message);
+    sendToChannel(channel, ["MSG", channel, message, ci.username]);
+  }
   
-  switch( m[0] )
-    {
-    case MessageTypes.kJoin:
-      enforce(m.length == 2);
-      writefln("%s: Joined channel %s", ci.username, m[1]);
-      ci.send(m);
-      subscribeToChannel( ci, m[1] );
-      break;
+  void cmdWho(string channel)
+  {
 
-    case MessageTypes.kPart:
-      enforce(m.length == 2);
-      writefln("%s: Parted channel %s", ci.username, m[1]);
-      ci.send(m);
-      unsubscribeToChannel( ci, m[1] );
-      break;
-
-    case MessageTypes.kNick:
-      enforce(m.length == 2);
-      writefln("%s: Changed name to %s ", ci.username, m[1]);
-      ci.username = m[1];
-      break;
-
-    case MessageTypes.kMsg:
-      enforce(m.length == 3);
-      writefln("%s: Sent message to #%s: %s", ci.username, m[1], m[2]);
-      sendToChannel(m[1], m ~ ci.username);
-      break;
-
-    case MessageTypes.kWho:
-      enforce(m.length == 2);
-      writefln("%s: WHO #%s", ci.username, m[1]);
-      string[] who = [];
-      foreach(curCi; Channel.getChannel(m[1]).subscriptions.byKey())
-	who ~= curCi.username;
-      ci.send([MessageTypes.kMsg, m[1], who.join(","), "Userlist"]);
-      
-      break;
-
-    default:
-      break;
-    }
-  
+    writefln("%s: WHO #%s", ci.username, channel);
+    string[] who = [];
+    foreach(curCi; Channel.getChannel(channel).subscriptions.byKey())
+      who ~= curCi.username;
+    //TODO: Send the list
+  }
 }

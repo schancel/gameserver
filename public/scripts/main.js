@@ -21,7 +21,7 @@ UserInterface.prototype.clickSubmit = function() {
     if( typeof(this.tabview.channels[this.activeChannel]) != 'undefined')
     {
 	var input = this.tabview.channels[this.activeChannel].get('panelNode').one('.input');
-	this.connection.Message(this.activeChannel, input.get('value') );
+	this.connection.Msg(this.activeChannel, input.get('value') );
 	input.set('value', '');
     }
 }

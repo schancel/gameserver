@@ -39,6 +39,7 @@ shared static this()
   auto router = new URLRouter;
   router
     .get("*", serveStaticFiles("./public/"))
+    .get("/scripts/commands.js", &MessageHandler.outputJavascript)
     .get("/websocket", &initiateWebsocket)
     .get("/", &handleRootRequest);
   

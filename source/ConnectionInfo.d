@@ -22,12 +22,14 @@ class ConnectionInfo
   byte[Channel] subscriptions;
   private WebSocket socket;
   ulong curThread;
+  MessageHandler mh;
 
   this(WebSocket _conn)
   {
     active = true;
     socket = _conn;
     curThread = socket.toHash();
+    mh = new MessageHandler(this);
   }
 
   ~this()
@@ -54,19 +56,18 @@ class ConnectionInfo
   {
     while(socket.connected)
       {
-	Json msg;
+	Json JsonMsg;
 	try
 	  {
-	    msg = parseJsonString(socket.receiveText());
-	    MessageType foo = deserializeJson!(string[])(msg).dup;
-	    handleMessage( this, foo);
+	    JsonMsg = parseJsonString(socket.receiveText());
+	    mh.handleMessage( JsonMsg );
 	  }
 	catch( Exception ex )
 	  {
 	    debug writeln(ex.msg);
 	  }
       } 
-    send([MessageTypes.kQuit]);
+    send(null);
     active = false;
   }
   
@@ -77,7 +78,7 @@ class ConnectionInfo
       {
 	receive( (MessageType m) {
 	    debug writefln("%d: Sending Message", curThread); 
-	    if (m[0] != MessageTypes.kQuit)
+	    if ( m )
 	      socket.send(serializeToJson(m).toString);
 	  });
       }
