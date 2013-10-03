@@ -42,13 +42,13 @@ class Channel
     name = p_name;
     channels[name] = this;
     observer = runTask({
-	scope(exit){writefln("%s: Observer died", name);}
 	while(active) {
 	  receive((MessageType m) {
-	      foreach( subscriber; subscriptions.byKey())
-		{
-		  subscriber.send(m);
-		}
+	      if(active)
+		foreach( subscriber; subscriptions.byKey())
+		  {
+		    subscriber.send(m);
+		  }
 	    });
 	}
       });
@@ -65,10 +65,12 @@ class Channel
   }
 
   void subscribe(ConnectionInfo conn) {
+    send(["JOINED", name, conn.username]);
     subscriptions[conn] = 0;
   };
 
   void unsubscribe(ConnectionInfo conn) {
+    send(["PARTED", name, conn.username]);
     subscriptions.remove(conn);
     if( subscriptions.length == 0)
       {

@@ -41,13 +41,15 @@ class MessageHandler
 		    args[i] = (msg[i+1]).get!arg();
 		  }
 		MemberFunctionsTuple!(MessageHandler, memberFunc)[0](args);
-		break;
+		goto end;
 	      }
 	  }
       default:
-	enforce(false, "Unsupported command!");
+	enforce(false, "Unsupported command: " ~ cmd);
 	break;
       }
+  end:
+    return;
   }
 
   static void outputJavascript(HTTPServerRequest req,
@@ -118,11 +120,12 @@ class MessageHandler
   
   void cmdWho(string channel)
   {
-
     writefln("%s: WHO #%s", ci.username, channel);
-    string[] who = [];
+    string[] who;
     foreach(curCi; Channel.getChannel(channel).subscriptions.byKey())
       who ~= curCi.username;
-    //TODO: Send the list
+
+
+    ci.send(["WHO", channel, serializeToJson(who).toString]);
   }
 }
