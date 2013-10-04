@@ -25,13 +25,17 @@ overflow: scroll;
 
 table.output td:first-child 
 {
+vertical-align:top;
+text-align:right;
 border-right: 1px solid black;
+background-color: none;
 }
 
-table.output td
+table.output td:not(:first-child)
 {
-margin: 0px;
-border-bottom: 1px solid black;
+margin: 1px;
+background-color: LightGrey;
+width: 100%;
 }
 
 input[type="text"].input

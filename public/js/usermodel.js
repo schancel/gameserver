@@ -11,14 +11,6 @@ YUI.add('usermodel',
 						Rank: 
 						{
 						    value: "5d"
-						},
-						DisplayName:
-						{
-						    valueFn:
-						    function()
-						    {
-							return this.get('Username') + this.get('Rank')
-						    }
 						}
 					    }
 					} ); 

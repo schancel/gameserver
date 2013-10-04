@@ -11,7 +11,14 @@ YUI.add('channeltab',
 		this.set('channelName', config.channelName);
 		//Y.get('channels')[config.channelName] = this;
 
-		var columns = [ {key: 'Username', width:'20%'}];// {key: 'Username', sortable:true} ];
+		var columns = [ {label: 'Users',
+				 width:'20%',
+				 allowHTML:true, 
+				 formatter: function(o)
+				 {
+				     return "<a href='/profile/"  + o.data.Username +"' target='__new'>" + o.data.Username + ' (' + o.data.Rank + ")</a>";
+				 }
+				}];// {key: 'Username', sortable:true} ];
 
 		this.UserDT = new Y.DataTable({recordType: Y.UserModel,
 						    columns: columns, 
@@ -58,13 +65,13 @@ YUI.add('channeltab',
 		Join: function(who) {
 		    if(this.UserDT.data.getById(who) == null)
 			this.UserDT.addRow(new Y.UserModel({Username: who}));
-		    this.writeToChannel( "JOINED", who);
+		    this.writeToChannel( "*", who + " joined the channel.");
 		} ,
 
 		Part: function(who) 
 		{
 		    this.UserDT.removeRow(who);
-		    this.writeToChannel("PARTED", who);
+		    this.writeToChannel("*", who + " left the channel.");
 		},
 
 		writeToChannel: function(title, message)
