@@ -3,10 +3,26 @@
 <head>
 <title>Prototype Chat Server</title>
 <style>
+html, body, form, .yui3-tabview-content, .yui3-tabview {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+div.yui3-tabview-list
+{
+height: 5%;
+}
+div.yui3-tabview-panel, div.yui3-tab-panel {
+height: 94%;
+}
+
 div.displayBlock
 {
 display: inline-block;
-width:80%;
+height: 94%;
+width: 80%;
 }
 
 div.users{
@@ -18,7 +34,7 @@ width:19%;
 table.output
 {
 display: block;
-height:25em;
+height: 100%;
 width: 100%;
 overflow: scroll;
 }
@@ -58,7 +74,7 @@ box-sizing: border-box;
   <ul>
     <li><a href="#About">About</a></li>
   </ul>
-<div>
+<div id="tabContainer">
 <div id="about">
   <h1>About</h1>
   Welcome to our test go server.  Our hope is to become a fast and

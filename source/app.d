@@ -11,17 +11,20 @@ import vibe.core.log;
 import std.conv;
 import vibe.data.json;
 
+import std.file;
+
 import Channels;
 import Messaging;
 import ConnectionInfo;
+import GameTree;
+import SGFParser;
 
 void initiateWebsocket(HTTPServerRequest req,
 		       HTTPServerResponse res)
 {
   auto wsd = handleWebSockets( function(WebSocket ws) {
-      ConnectionInfo ci = new ConnectionInfo(ws);
+      scope ConnectionInfo ci = new ConnectionInfo(ws);
       
-      scope(exit) { ci.destroy(); }
       ci.spawn();
     } );
   
@@ -42,7 +45,15 @@ shared static this()
     .get("/js/commands.js", &MessageHandler.outputJavascript)
     .get("/websocket", &initiateWebsocket)
     .get("/", &handleRootRequest);
-  
+
+  writefln("Parsing...");
+  auto foo = new SGFParser(readText("kogo.sgf"));
+  writefln("Done... %s", foo.root.Children.length);
+  foreach(string key, string[] props; foo.root.Children[0].Properties)
+    {
+      writefln("%s: %s", key, props[$-1]);
+    }  
+
   //setLogLevel(LogLevel.trace);
   setLogFile("log.txt");
 

@@ -54,9 +54,15 @@ UserInterface.prototype.clickSubmit = function() {
     var tab = this.tabview.get('selection') ;
     if( tab instanceof this.Y.ChannelTab )
     {
-	var input = tab.get('panelNode').one('.input');
-	this.connection.Msg(tab.get('channelName'), input.get('value') );
-	input.set('value', '');
+		var input = tab.get('panelNode').one('.input');
+		if( input.charAt(0) != '/' )
+			this.connection.Msg(tab.get('channelName'), input.get('value') );
+		else
+		{
+			var cmd = JSON.stringify(input.substring(1));
+			input.connection[cmd[0]].call(input.connection, cmd.slice(1));
+		}
+		input.set('value', '');
     }
 }
 
@@ -100,4 +106,4 @@ function UserInterface (Y) {
     Y.on('focus', function(e) { document.title=self.titleCache; self.messages=0; })
 }
 
-YUI().use('node', 'event', 'tabview', 'model', 'model-list', 'channeltab', function(Y) { new  UserInterface(Y); } )
+YUI().use('node',  'event', 'tabview', 'model', 'model-list', 'channeltab', function(Y) { new  UserInterface(Y); } )
