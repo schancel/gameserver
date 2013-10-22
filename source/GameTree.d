@@ -1,4 +1,8 @@
 import std.stdio;
+import std.container;
+import std.conv;
+import std.array;
+
 
 class GameNode
 {
@@ -38,10 +42,66 @@ class GameNode
     return newChild;
   }
 
-  GameNode walkTree()
+  GameNodeWalker walkTree()
   {
+    return GameNodeWalker(this);
+  }
 
-    yield
+  string toSgf(int depth = 2)
+  {
+    auto str = appender!(string);
+    
+    str.put(";_id[");
+    str.put(to!string(this.NodeID));
+    str.put("]");
 
+    foreach( key, arr; Properties )
+      {
+        str.put(key);
+        str.put("[");
+        str.put(arr.join("]["));
+        str.put("]");
+      }
+        
+    if( depth > 0 )
+      foreach( GameNode child; Children)
+        { 
+          if( this.Children.length > 1 ) str.put('(');
+          str.put( child.toSgf(depth-1) );
+          if( this.Children.length > 1 ) str.put(')');
+          
+        }
+
+    return str.data;
+  }
+}
+
+struct GameNodeWalker
+{
+  GameNode start;
+  this(GameNode _start)
+  {
+    start = _start;
+  }
+
+  int opApply(int delegate(ref GameNode) dg)
+  {
+    auto nodeStack = make!(Array!(GameNode))(start);
+    int result = 0;
+
+    while ( ! nodeStack.empty ) {
+      auto curNode = (nodeStack.back());
+      nodeStack.removeBack();
+
+      result = dg(curNode);
+      if( result ) return result;
+
+      foreach( GameNode child; curNode.Children )
+        {
+          nodeStack.insertBack(child);
+        }
+    }
+
+    return 0;
   }
 }

@@ -19,7 +19,7 @@ class SGFParser
 
   void ParseTree()
   {
-    Array!(GameNode*) nodeStack;
+    Array!(GameNode) nodeStack;
     char c = 0x00;
 
     auto curNode = this.root;
@@ -32,11 +32,11 @@ class SGFParser
         parseProperties(curNode);
         break;
       case '(':
-        nodeStack.insertBack(&curNode);
+        nodeStack.insertBack(curNode);
         break;
       case ')':
-        curNode = *(nodeStack.back());
-        nodeStack[].popBack();
+        curNode = (nodeStack.back());
+        nodeStack.removeBack();
         break;
       default:
         break;

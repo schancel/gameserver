@@ -19,6 +19,8 @@ import ConnectionInfo;
 import GameTree;
 import SGFParser;
 
+GameNode[int] kogoNodes;
+
 void initiateWebsocket(HTTPServerRequest req,
 		       HTTPServerResponse res)
 {
@@ -31,10 +33,27 @@ void initiateWebsocket(HTTPServerRequest req,
   wsd(req,res);
 }
 
-void handleRootRequest(HTTPServerRequest req,
+void handleKogoRequest(HTTPServerRequest req,
 		       HTTPServerResponse res)
 {
-  res.redirect("/index.html");
+  struct ProgressiveRequestData
+  {
+    int id;
+    string pid;
+  }
+
+
+  ProgressiveRequestData p;
+  loadFormData(req, p);
+
+  writefln("%s, %s", p.id, p.pid);
+
+  if( p.id == 0) 
+    res.writeBody( kogoNodes[1].toSgf );
+  else if( auto node = p.id in kogoNodes)
+    res.writeBody( (*node).toSgf);
+  else
+    res.writeBody(";BM[]");
 }
 
 shared static this() 
@@ -44,15 +63,14 @@ shared static this()
     .get("*", serveStaticFiles("./public/"))
     .get("/js/commands.js", &MessageHandler.outputJavascript)
     .get("/websocket", &initiateWebsocket)
-    .get("/", &handleRootRequest);
+    .get("/", staticRedirect("/index.html"))
+    .get("/kogo", &handleKogoRequest);
 
-  writefln("Parsing...");
   auto foo = new SGFParser(readText("kogo.sgf"));
-  writefln("Done... %s", foo.root.Children.length);
-  foreach(string key, string[] props; foo.root.Children[0].Properties)
+  foreach( GameNode node; foo.root.walkTree)
     {
-      writefln("%s: %s", key, props[$-1]);
-    }  
+      kogoNodes[node.NodeID] = node;
+    }
 
   //setLogLevel(LogLevel.trace);
   setLogFile("log.txt");
