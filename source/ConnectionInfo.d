@@ -9,6 +9,7 @@ import vibe.stream.ssl;
 import vibe.core.concurrency;
 import vibe.core.log;
 import std.conv;
+import vibe.stream.operations;
 import vibe.data.json;
 
 import Messaging;
@@ -20,15 +21,12 @@ class ConnectionInfo
   bool active;
   string username = "AnonymousCoward";
   byte[Channel] subscriptions;
-  private WebSocket socket;
   ulong curThread;
   MessageHandler mh;
 
-  this(WebSocket _conn)
+  this()
   {
     active = true;
-    socket = _conn;
-    curThread = socket.toHash();
     mh = new MessageHandler(this);
   }
 
@@ -50,6 +48,29 @@ class ConnectionInfo
   void send( MessageType m )
   {
     writeTask.send(m);
+  }
+
+  void subscribe(Channel chan) {
+    subscriptions[chan] = 0;
+  };
+
+  void unsubscribe(Channel chan) {
+    subscriptions.remove(chan);
+  };
+}
+
+/****************************************************************************************
+
+*****************************************************************************************/
+class WebsocketConnection : ConnectionInfo
+{ 
+  private WebSocket socket;
+
+  this(WebSocket _conn)
+  {
+    super();
+    socket = _conn;
+    curThread = socket.toHash();
   }
 
   void readLoop()
@@ -86,19 +107,79 @@ class ConnectionInfo
   
   void spawn()
   {
-    writeTask = runTask(&writeLoop);
     readTask = runTask(&readLoop);
-    scope(exit) {
-      readTask.join();
-      active = false;
-    }
+    writeTask = runTask(&writeLoop);
+    readTask.join();
+    active = false;
+  }
+}
+
+
+/****************************************************************************************
+
+*****************************************************************************************/
+class TelnetConnection : ConnectionInfo
+{ 
+  TCPConnection socket;
+
+  this(TCPConnection _conn)
+  {
+    super();
+    socket = _conn;
+    curThread = 1; //TODO: Fix this
   }
 
-  void subscribe(Channel chan) {
-    subscriptions[chan] = 0;
-  };
+  ~this()
+  {
+    debug writefln("%d: disconnected", curThread);
+    foreach( sub; subscriptions.byKey() )
+      {
+	sub.unsubscribe(this);
+      }
+  }
 
-  void unsubscribe(Channel chan) {
-    subscriptions.remove(chan);
-  };
+  void readLoop()
+  {
+    while(socket.connected)
+      {
+	Json JsonMsg;
+	try
+	  {           
+            writefln("WTF" );
+
+            auto msg = socket.readAllUTF8();
+	    JsonMsg = parseJsonString(msg);
+	    mh.handleMessage( JsonMsg );
+            writefln("WTF %s", msg );
+	  }
+	catch( Exception ex )
+	  {
+	     writeln(ex.msg);
+	  }
+      } 
+    send(null);
+    active = false;
+  }
+  
+  private void writeLoop()
+  {
+    debug writefln("%d: writetask", curThread);
+    while(active)
+      {
+	receive( (MessageType m) {
+	    debug writefln("%d: Sending Message", curThread); 
+	    if ( m )
+	      socket.write(serializeToJson(m).toString);
+	  });
+      }
+  }
+  
+  void spawn()
+  {
+    readTask = runTask(&readLoop);
+    writeTask = runTask(&writeLoop);
+
+    readTask.join();
+    active = false;
+  }
 }
