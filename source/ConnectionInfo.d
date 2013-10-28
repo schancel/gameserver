@@ -80,8 +80,8 @@ class WebsocketConnection : ConnectionInfo
 	Json JsonMsg;
 	try
 	  {
-	    JsonMsg = parseJsonString(socket.receiveText());
-	    mh.handleMessage( JsonMsg );
+	    auto msg = socket.receiveText();
+	    mh.handleMessage( parseJsonString(msg) );
 	  }
 	catch( Exception ex )
 	  {
@@ -145,12 +145,9 @@ class TelnetConnection : ConnectionInfo
 	Json JsonMsg;
 	try
 	  {           
-            writefln("WTF" );
-
-            auto msg = socket.readAllUTF8();
+            auto msg = cast(string)socket.readLine();
 	    JsonMsg = parseJsonString(msg);
 	    mh.handleMessage( JsonMsg );
-            writefln("WTF %s", msg );
 	  }
 	catch( Exception ex )
 	  {

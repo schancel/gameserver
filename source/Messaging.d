@@ -23,7 +23,7 @@ class MessageHandler
   void handleMessage(Json msg)
   {
     string cmd = msg[0].get!string();
-    switch( cmd )
+    switch( cmd.toUpper() )
       {
 	/*
 	  Abuse the runtime-reflextions to delegate out 
@@ -32,7 +32,7 @@ class MessageHandler
 	  {
 	    static if ( memberFunc.startsWith("cmd") )
 	      {
-	      case memberFunc[3..$]:
+	      case memberFunc[3..$].toUpper():
 		alias ParameterTypeTuple!(MemberFunctionsTuple!(MessageHandler, memberFunc)) ArgTypes;
 		enforce(ArgTypes.length + 1 == msg.length, "Improper number of arguments");
 		ArgTypes args;

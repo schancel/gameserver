@@ -7,4 +7,5 @@
 	"Shammah Chancellor"
     ],
     "dependencies": { "vibe-d": "~master" },
+    "lflags": [ "-L/usr/local/lib/" ]
 }
