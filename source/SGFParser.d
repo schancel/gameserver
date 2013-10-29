@@ -1,5 +1,6 @@
 private import GameTree;
 private import std.container;
+private import std.array : Appender;
 
 private import std.string : indexOf;
 
@@ -7,7 +8,6 @@ class SGFParser
 {
   GameNode root;
   string sgfData;
-  int index = 0;
 
   this(string data)
   {
@@ -21,39 +21,16 @@ class SGFParser
   {
     Array!(GameNode) nodeStack;
     char c = 0x00;
+    int index = 0;
 
     auto curNode = this.root;
-
-    for( index = 0; index < sgfData.length; index++) {
-
-      switch (sgfData[index]) {
-      case ';':
-        curNode = curNode.appendChild();
-        parseProperties(curNode);
-        break;
-      case '(':
-        nodeStack.insertBack(curNode);
-        break;
-      case ')':
-        curNode = (nodeStack.back());
-        nodeStack.removeBack();
-        break;
-      default:
-        break;
-      }
-    }
-
-  }
-
-  void parseProperties(GameNode curNode)
-  {
     string curKey;
 
     string readKey()
     {
       int startIndex = index;
 
-      for( ; index < sgfData.length; index++ )
+      for( index++; index < sgfData.length; index++ )
         { 
           switch( sgfData[index] )
             {
@@ -69,33 +46,51 @@ class SGFParser
     string readValue()
     {
       int startIndex = ++index;
+      Appender!(string) output;
+
       for( ; index < sgfData.length; index++ )
         {
           switch( sgfData[index] )
             {
             case '\\':
-              index++; //TODO: Filter these outsomehow.
+              output.put(sgfData[startIndex..index]);
+              startIndex = ++index;
               break;
             case ']':
-              return sgfData[startIndex..index];
+              if( output.data.length == 0)
+                return sgfData[startIndex..index];
+              else 
+                {
+                  output.put(sgfData[startIndex..index]);
+                  return output.data;
+                }
             default:
               continue; 
             }
         }
       return "";
     }
-    
-    for( this.index++; index < sgfData.length; index++ )
-      { 
-        switch( sgfData[index] )
+
+    for( index = 0; index < sgfData.length; index++)
+      {
+
+        switch (sgfData[index]) 
           {
-          case '(', ')', ';':
-            index--;
-            return;
+          case ';':
+            curNode = curNode.appendChild();
+            break;
+          case '(':
+            nodeStack.insertBack(curNode);
+            break;
+          case ')':
+            curNode = (nodeStack.back());
+            nodeStack.removeBack();
+            break;
           case '[':
             curNode.pushProperty(curKey, readValue());
+            index--;
             break;
-          case ' ', '\t', '\r', '\n':
+          case ' ', '\t', '\r', '\n', ']':
             break;
           default:
             curKey = readKey();

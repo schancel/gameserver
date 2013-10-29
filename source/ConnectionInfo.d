@@ -107,8 +107,9 @@ class WebsocketConnection : ConnectionInfo
   
   void spawn()
   {
-    readTask = runTask(&readLoop);
     writeTask = runTask(&writeLoop);
+    readTask = runTask(&readLoop);
+
     readTask.join();
     active = false;
   }
@@ -127,6 +128,11 @@ class TelnetConnection : ConnectionInfo
     super();
     socket = _conn;
     curThread = 1; //TODO: Fix this
+
+    socket.write("Login: ");
+    socket.readLine();
+    socket.write("Password: ");
+    writeln(cast(string)socket.readLine());
   }
 
   ~this()
@@ -145,13 +151,15 @@ class TelnetConnection : ConnectionInfo
 	Json JsonMsg;
 	try
 	  {           
+            send(["#> "]);
             auto msg = cast(string)socket.readLine();
+            writefln("%s", msg);
 	    JsonMsg = parseJsonString(msg);
 	    mh.handleMessage( JsonMsg );
 	  }
 	catch( Exception ex )
 	  {
-	     writeln(ex.msg);
+            writeln(ex.msg);
 	  }
       } 
     send(null);
@@ -166,15 +174,19 @@ class TelnetConnection : ConnectionInfo
 	receive( (MessageType m) {
 	    debug writefln("%d: Sending Message", curThread); 
 	    if ( m )
-	      socket.write(serializeToJson(m).toString);
+              {
+                socket.write(m[0]);
+                writeln(m[0]);
+                socket.flush();
+              }
 	  });
       }
   }
   
   void spawn()
   {
-    readTask = runTask(&readLoop);
     writeTask = runTask(&writeLoop);
+    readTask = runTask(&readLoop);
 
     readTask.join();
     active = false;
