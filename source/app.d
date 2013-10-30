@@ -1,23 +1,25 @@
+import core.time;
+
+import std.container;
+import std.stdio;
+import std.conv;
+import std.file;
+
 import vibe.d;
 import vibe.core.core;
 import vibe.core.driver;
 import vibe.http.websockets;
-import std.container;
-import std.stdio;
-import core.time;
 import vibe.stream.ssl;
 import vibe.core.concurrency;
 import vibe.core.log;
-import std.conv;
 import vibe.data.json;
 
-import std.file;
+import gameserver.channels;
+import client.messaging;
+import client.connection;
+import sgf.gametree;
+import sgf.parser;
 
-import Channels;
-import Messaging;
-import ConnectionInfo;
-import GameTree;
-import SGFParser;
 
 GameNode[int] kogoNodes;
 

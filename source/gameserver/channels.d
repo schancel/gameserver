@@ -1,3 +1,5 @@
+module gameserver.channels;
+
 import vibe.d;
 import vibe.core.core;
 import vibe.core.driver;
@@ -11,8 +13,10 @@ import vibe.core.log;
 import std.conv;
 import vibe.data.json;
 
-import Messaging;
-import ConnectionInfo;
+import client.messaging;
+import client.connection;
+
+
 
 class Channel
 {

@@ -1,15 +1,22 @@
-private import vibe.d;
-private import core.time;
-private import vibe.core.concurrency;
-private import std.conv;
-private import std.stdio;
-private import std.traits;
-private import vibe.data.json;
 
-private import Channels;
-private import ConnectionInfo;
+module client.messaging;
+
+import core.time;
+
+import vibe.d;
+import vibe.core.concurrency;
+import std.conv;
+import std.stdio;
+import std.traits;
+import vibe.data.json;
+
+import client.connection;
+import gameserver.channels;
+import sgf.parser;
+
 
 alias immutable(string)[] MessageType;
+
 
 class MessageHandler
 {
@@ -26,7 +33,7 @@ class MessageHandler
     switch( cmd.toUpper() )
       {
 	/*
-	  Abuse the runtime-reflextions to delegate out 
+	  Abuse the runtime-reflections to delegate out 
 	*/
 	foreach(memberFunc; __traits(allMembers, MessageHandler) )
 	  {
@@ -58,13 +65,12 @@ class MessageHandler
 
     auto writer = res.bodyWriter();
     /*
-      Abuse the runtime-reflextions output stub functions we need.
+      Abuse the runtime-reflections output stub functions we need.
     */
     foreach(memberFunc; __traits(allMembers, MessageHandler) )
       {
 	static if ( memberFunc.startsWith("cmd") )
 	  {
-	    //alias ParameterTypeTuple!(MemberFunctionsTuple!(MessageHandler, memberFunc)) ArgTypes;
 	    alias ParameterIdentifierTuple!(MemberFunctionsTuple!(MessageHandler, memberFunc)) ArgNames;
 		
 	    writer.write("ServerConnection.prototype."); 

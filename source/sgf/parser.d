@@ -1,4 +1,6 @@
-private import GameTree;
+module sgf.parser;
+
+private import sgf.gametree;
 private import std.container;
 private import std.array : Appender;
 
