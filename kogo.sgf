@@ -1,0 +1,329 @@
+(;GM[1]FF[4]CA[UTF-8]AP[CGoban:3]ST[2]
+RU[Japanese]SZ[19]HA[4]KM[0.50]TM[1800]OT[5x30 byo-yomi]
+PW[oasiny]PB[eluusive]WR[3d]BR[2k]DT[2013-09-04]PC[The KGS Go Server at http://www.gokgs.com/]AB[dd][pd][dp][pp]RE[W+31.50]
+;W[qf]WL[1795.369]
+;B[mc]BL[1769.366]
+;W[qn]WL[1785.45]
+;B[ro]BL[1760.739]
+;W[nq]WL[1782.189]
+;B[np]BL[1747.694]
+;W[mp]WL[1779.225]
+;B[oq]BL[1732.417]
+;W[no]WL[1776.132]
+;B[op]BL[1725.415]
+;W[mo]WL[1755.267]
+;B[nr]BL[1712.477]
+;W[mq]WL[1752.685]C[oasiny [3d?\]: Oh, you can just cut it off...
+eluusive [2k\]: I misread.
+oasiny [3d?\]: That will be more profitable
+]
+;B[on]BL[1669.86]
+;W[oo]WL[1747.652]
+;B[po]BL[1665.28]
+;W[pn]WL[1746.481]
+;B[om]BL[1645.577]C[oasiny [3d?\]: This action seems ...eh, reluctant
+]
+;W[ql]WL[1729.75]C[eluusive [2k\]: reluctant?
+]
+;B[ok]BL[1627.036]C[oasiny [3d?\]: I mean, it is not appropriate
+]
+;W[pj]WL[1724.364]C[eluusive [2k\]: hmm
+oasiny [3d?\]: You didn't receive any benefit from the cut-off
+oasiny [3d?\]: and help me get a territory on the right
+oasiny [3d?\]: Does it make sense this way?
+eluusive [2k\]: It's not so good, but I was thinking what having you connected would be worse.
+oasiny [3d?\]: I don't think it really matters
+omggg [?\]: p7 will be more of a burden for Black that n5 will be for White?
+eluusive [2k\]: yes
+]
+;B[ll]BL[1442.363]C[oasiny [3d?\]: Connection is not so important sometimes.
+]
+;W[iq]WL[1705.508]
+;B[cj]BL[1406.174]
+;W[fc]WL[1696.321]
+;B[hc]BL[1392.188]
+;W[cf]WL[1691.907]
+;B[ee]BL[1387.665]C[oasiny [3d?\]: By the way
+oasiny [3d?\]: You know, actually, N5 is a request for connection, and was refused
+oasiny [3d?\]: When you refuse someone, it should be reasonable enough...
+]
+;W[cc]WL[1623.292]
+;B[dc]BL[1360.973]
+;W[cd]WL[1621.767]
+;B[eg]BL[1354.169]
+;W[de]WL[1618.426]
+;B[fd]BL[1342.047]C[oasiny [3d?\]: not E13, it should be at D13
+oasiny [3d?\]: I'll show you the whole process tomorrow
+]
+;W[db]WL[1597.412]
+;B[eb]BL[1328.989]
+;W[ec]WL[1595.075]
+;B[ed]BL[1326.556]
+;W[fb]WL[1593.428]
+;B[gc]BL[1309.841]
+;W[cn]WL[1575.052]
+;B[bo]BL[1291.298]
+;W[fq]WL[1567.739]
+;B[eq]BL[1284.531]C[oasiny [3d?\]: I don't know how to response to the knight move
+oasiny [3d?\]: @_@
+]
+;W[fp]WL[1534.882]
+;B[dn]BL[1279.011]
+;W[cq]WL[1505.928]
+;B[dq]BL[1247.972]C[oasiny [3d?\]: I just made a bad move
+]
+;W[dm]WL[1465.101]
+;B[do]BL[1201.1]
+;W[bn]WL[1448.996]
+;B[co]BL[1193.046]
+;W[cl]WL[1447.936]
+;B[cg]BL[1170.157]C[oasiny [3d?\]: Nice for this one
+]
+;W[bg]WL[1420.871]
+;B[ch]BL[1151.366]
+;W[fm]WL[1414.326]
+;B[cr]BL[1103.526]
+;W[oj]WL[1393.702]
+;B[mk]BL[1068.226]
+;W[ef]WL[1361.058]
+;B[ff]BL[1061.963]
+;W[df]WL[1360.119]
+;B[fh]BL[1055.032]
+;W[gd]WL[1357.778]
+;B[fe]BL[1052.594]
+;W[gg]WL[1338.052]
+;B[fg]BL[1012.568]
+;W[qc]WL[1334.191]
+;B[qd]BL[1004.915]
+;W[pc]WL[1319.707]
+;B[od]BL[1002.852]
+;W[rd]WL[1316.498]
+;B[oc]BL[995.57]
+;W[re]WL[1310.683]
+;B[of]BL[983.335]
+;W[mi]WL[1297.774]
+;B[li]BL[978.094]
+;W[lh]WL[1294.206]
+;B[mh]BL[959.458]
+;W[lj]WL[1290.792]
+;B[ni]BL[956.238]
+;W[ki]WL[1287.642]
+;B[nj]BL[954.523]
+;W[pk]WL[1264.717]
+;B[mg]BL[942.32]
+;W[kf]WL[1259.36]
+;B[jl]BL[925.606]C[oasiny [3d?\]: You can't threaten my stones by cutting this way. They are very flexible and not facing a danger of death
+eluusive [2k\]: Not sure what to do though,  at least I can reduce this way while you make life?
+]
+;W[kd]WL[1174.658]
+;B[he]BL[915.746]C[eluusive [2k\]: You'll have to show me a better way.
+eluusive [2k\]: I will bring the game with me tomorrow
+oasiny [3d?\]: OK
+oasiny [3d?\]: OK
+]
+;W[lc]WL[1078.175]
+;B[jc]BL[873.374]
+;W[md]WL[1072.198]
+;B[nc]BL[868.494]
+;W[mf]WL[1062.488]
+;B[oh]BL[838.501]
+;W[mr]WL[1054.513]
+;B[ko]BL[827.997]
+;W[rn]WL[925.08]
+;B[rq]BL[815.03]
+;W[or]WL[898.495]
+;B[pr]BL[810.826]
+;W[ns]WL[897.834]
+;B[ps]BL[805.132]
+;W[so]WL[891.034]
+;B[rp]BL[784.057]
+;W[nl]WL[872.703]
+;B[ol]BL[777.438]
+;W[mm]WL[871.275]
+;B[nk]BL[768.617]
+;W[kn]WL[868.615]
+;B[qh]BL[747.049]
+;W[rj]WL[846.871]
+;B[rh]BL[654.927]
+;W[jn]WL[828.008]
+;B[fr]BL[646.256]
+;W[gr]WL[825.751]
+;B[er]BL[635.255]
+;W[hm]WL[814.445]
+;B[fo]BL[632.323]
+;W[go]WL[811.697]
+;B[lb]BL[610.354]
+;W[lg]WL[774.274]
+;B[og]BL[593.522]
+;W[ij]WL[755.361]
+;B[gs]BL[583.313]
+;W[hr]WL[753.265]
+;B[gb]BL[576.689]
+;W[ea]WL[751.612]
+;B[pb]BL[534.19]
+;W[qb]WL[749.402]
+;B[ob]BL[531.523]
+;W[qa]WL[742.948]
+;B[bh]BL[521.314]
+;W[bf]WL[738.012]
+;B[bk]BL[507.008]
+;W[if]WL[732.833]
+;B[hh]BL[491.942]
+;W[ih]WL[718.184]
+;B[hg]BL[488.455]
+;W[hf]WL[713.99]
+;B[gf]BL[485.963]
+;W[ig]WL[713.201]
+;B[hi]BL[484.816]
+;W[ej]WL[654.299]
+;B[gk]BL[464.648]
+;W[ei]WL[643.347]
+;B[dg]BL[459.222]
+;W[il]WL[573.331]
+;B[fn]BL[452.842]
+;W[gn]WL[571.318]
+;B[an]BL[440.154]
+;W[am]WL[564.653]
+;B[ao]BL[434.128]
+;W[bl]WL[563.566]
+;B[jk]BL[397.804]
+;W[gi]WL[554.753]
+;B[hj]BL[389.317]
+;W[gj]WL[546.014]
+;B[ik]BL[374.43]
+;W[fk]WL[543.699]
+;B[gh]BL[306.175]
+;W[gl]WL[537.52]
+;B[ii]BL[288.185]
+;W[id]WL[528.182]
+;B[hd]BL[283.153]
+;W[kc]WL[523.813]
+;B[kb]BL[280.881]
+;W[ic]WL[522.996]
+;B[jd]BL[268.785]
+;W[je]WL[509.631]
+;B[jb]BL[266.155]
+;W[ie]WL[507.449]
+;B[ib]BL[262.096]
+;W[ck]WL[506.683]
+;B[bj]BL[256.363]
+;W[hk]WL[500.409]
+;B[ji]BL[255.016]
+;W[jh]WL[497.874]
+;B[lm]BL[235.876]
+;W[ln]WL[489.605]
+;B[si]BL[204.288]
+;W[sj]WL[474.673]
+;B[qi]BL[198.179]
+;W[qj]WL[471.621]
+;B[pl]BL[170.118]
+;W[qo]WL[419.848]
+;B[qp]BL[164.613]
+;W[rl]WL[417.689]
+;B[rg]BL[142.132]
+;W[jm]WL[391.969]
+;B[rf]BL[114.894]
+;W[qe]WL[312.583]
+;B[ga]BL[104.826]
+;W[fa]WL[310.282]
+;B[dj]BL[69.784]
+;W[dk]WL[301.723]
+;B[fi]BL[61.726]C[eluusive [2k\]: Do you want to stop here?
+oasiny [3d?\]: why
+eluusive [2k\]: Hour is over I think.
+oasiny [3d?\]: Oh, that's ok
+eluusive [2k\]: Okay, thank you
+oasiny [3d?\]: The rest for free
+]
+;W[fj]WL[227.707]
+;B[sp]BL[41.109]
+;W[sn]WL[224.156]
+;B[ak]BL[23.89]
+;W[hs]WL[221.136]
+;B[al]BL[18.828]
+;W[bm]WL[218.061]
+;B[fs]BL[6.796]
+;W[ml]WL[211.044]
+;B[nm]BL[30]OB[5]
+;W[mn]WL[209.233]
+;B[nf]BL[30]OB[5]
+;W[ne]WL[204.879]
+;B[oe]BL[30]OB[5]
+;W[di]WL[178.829]
+;B[ag]BL[30]OB[5]
+;W[af]WL[176.734]
+;B[ah]BL[30]OB[5]
+;W[ci]WL[173.922]
+;B[bi]BL[30]OB[5]
+;W[pa]WL[171.972]
+;B[oa]BL[30]OB[5]
+;W[sb]WL[169.753]
+;B[se]BL[30]OB[5]
+;W[sd]WL[166.782]
+;B[sf]BL[30]OB[5]
+;W[ri]WL[165.713]
+;B[sh]BL[30]OB[5]
+;W[lk]WL[132.548]
+;B[kl]BL[30]OB[5]
+;W[os]WL[129.919]
+;B[qr]BL[30]OB[5]C[oasiny [3d?\]: I doesn't need an extra move
+eluusive [2k\]: hmm
+]
+;W[kj]WL[107.183]
+;B[jj]BL[30]OB[5]
+;W[mj]WL[105.438]
+;B[em]BL[30]OB[5]
+;W[el]WL[102.522]
+;B[en]BL[30]OB[5]
+;W[oi]WL[100.753]
+;B[nd]BL[30]OB[4]
+;W[me]WL[98.574]
+;B[pm]BL[30]OB[4]
+;W[qm]WL[94.078]
+;B[ep]BL[30]OB[4]
+;W[ph]WL[91.992]
+;B[pg]BL[30]OB[4]
+;W[pi]WL[91.268]
+;B[qg]BL[30]OB[4]
+;W[nn]WL[90.086]
+;B[nh]BL[30]OB[4]C[oasiny [3d?\]: That's all?
+eluusive [2k\]: Black many eyes, no points haha
+eluusive [2k\]: I think so
+]
+;W[]WL[46.029]
+;B[]BL[30]OB[4]TW[aa][ba][ca][da][ra][sa][ab][bb][cb][eb][rb][ac][bc][rc][sc][ad][bd][ld][ae][be][ce][ke][le][jf][lf][jg][kg][kh][li][ek][gk][qk][rk][sk][dl][fl][hl][sl][cm][gm][im][rm][sm][hn][in][ho][io][jo][ko][lo][gp][hp][ip][jp][kp][lp][gq][hq][jq][kq][lq][ir][jr][kr][lr][nr][is][js][ks][ls][ms]TB[ha][ia][ja][ka][la][ma][na][hb][mb][nb][gd][ge][gg][ng][sg][ai][aj][ij][eo][ap][bp][cp][aq][bq][cq][pq][qq][sq][ar][br][dr][rr][sr][as][bs][cs][ds][es][qs][rs][ss]C[eluusive [2k\]: Thank you
+oasiny [3d?\]: OK, I think you might have some misunderstanding on the principle...
+eluusive [2k\]: Shi shi?
+oasiny [3d?\]: You should expand your territory as much as possible to the corner and side
+oasiny [3d?\]: and they are the basis
+oasiny [3d?\]: You can extend to the center based on the territory in the corners and sides
+oasiny [3d?\]: But it will be very difficult for you to directly move to the center
+oasiny [3d?\]: I'm not sure whether it will make sense
+eluusive [2k\]: I understand, but I didn't feel like I had time
+eluusive [2k\]: That group I made at N9 was weighing my down
+oasiny [3d?\]: So, I prefer face to face
+oasiny [3d?\]: Yes, that's why I said reluctant...
+eluusive [2k\]: Yes, probably just a bad idea
+eluusive [2k\]: It did what I wanted it to, but maybe what I wanted to do was no good :)
+eluusive [2k\]: I was trying to keep the right side small
+oasiny [3d?\]: In China, we call it "reluctant"
+oasiny [3d?\]: Yeah
+eluusive [2k\]: Okay, I will bring the game record with me tomorrow, and we can have another lesson.
+oasiny [3d?\]: All right.
+oasiny [3d?\]: So I'm going to have dinner
+eluusive [2k\]: Good luck with your games.   You've won all of them by resign so far :)
+eluusive [2k\]: Enjoy
+oasiny [3d?\]: ohoh
+oasiny [3d?\]: I didn't realize...
+oasiny [3d?\]: Have a good night!
+eluusive [2k\]: You too
+oasiny [3d?\]: See you tomorrow
+eluusive [2k\]: You are out at 3pm?
+oasiny [3d?\]: Yeah, maybe I'll put my bag back to the dorm
+oasiny [3d?\]: And then whenever is ok
+eluusive [2k\]: Okay.  I will text you when I or james leaves here
+oasiny [3d?\]: OK
+eluusive [2k\]: normally we meet at 6pm.
+oasiny [3d?\]: Good
+oasiny [3d?\]: Bye, I'm hungry now, haha~
+])

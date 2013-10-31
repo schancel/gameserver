@@ -22,11 +22,12 @@ struct Message(char quote = "\"", char escape = "\\")
             break;
           case '"':
             quoted = !quoted;
-            if( quoted )
+            if( quoted ) {
               startIndex = i + 1; //We don't want to read the initial quote.
               continue;
-            else
+            } else {
               goto case ' '; //Explicite fall through
+            }
           case ' ':
             if( ! quoted ) {
               if( output.data.length == 0) {
