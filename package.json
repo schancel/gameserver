@@ -6,6 +6,6 @@
     "authors": [
 	"Shammah Chancellor"
     ],
-    "dependencies": { "vibe-d": "~master" },
+    "dependencies": { "vibe-d": "~master", "mysql-native": "~master" },
     "lflags": [ "-L/usr/local/lib/" ]
 }

@@ -7,14 +7,22 @@ import std.array;
 import std.math;
 
 
+static immutable int DAN_RANK = 17;
+static immutable int PRO_RANK = 26; //TODO: Implement this in the conversions.
+static immutable int RANK_DIFFERENCE = 1;
 
 struct Rank //Implement ELO ratings and their conversion to Go ranks.
 { 
-  static immutable int DAN_RANK = 1700;
-  static immutable int RANK_DIFFERENCE = 100;
-  int rating;
+  double rating;
+  double uncertainty;
+  /**
+   * Constructor for rank.  Takes in rating and uncertainty.
 
-  this (int _rating = 0)
+   * _rating    = Existing rating for user.  Presumably from database, or user input.
+   * uncertaint = Uncertainty for rank.   The default value is very large as we don't know what a new rank is yet.
+   *              This is used in the algorithm for adjustments.
+   */
+  this (int _rating = 0, double uncertainty = 10000000)
   {
     rating = _rating;
   }
@@ -50,4 +58,23 @@ struct Rank //Implement ELO ratings and their conversion to Go ranks.
     }
     return writer.data;
   }
+}
+
+//TODO: Support komi
+void AdjustRanks( ref Rank winner, ref Rank loser, int handicap, int komi )
+{
+  //Note: Represents a 66% chance of winning, if you are 1 rank above the person.
+  double Qw = pow(2, winner.rating );
+  double Ql = pow(2, loser.rating );
+
+
+  Winner.rating = Winner.rating + (1 - (Qb/(Qw+Ql))) * 1/loser.uncertainty;
+  Loser.rating = Loser.rating - (Ql/(Qw+Ql)) * 1/winner.uncertainty;
+
+  winner.games += 1;
+  loser.games += 1;
+
+  //TODO: Figure out how to properly gauge uncertainty unjustments.
+  winner.uncertainty = min(sqrt(winner.uncertainty * 1/loser.uncertainty), 1); //Minimum rank uncertainty;
+  loser.uncertainty = min(sqrt(loser.uncertainty * 1/winner.uncertainty), 1);
 }

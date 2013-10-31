@@ -54,7 +54,7 @@ shared static this()
     .get("/kogo", &handleKogoRequest);
 
   //This is just temporary to support KOGO's joseki dictionary.
-  auto foo = new SGFParser(readText("kogo.sgf"));
+  auto foo = new SGFParser(readText("test.sgf"));
   foreach( GameNode node; foo.root.walkTree)
     {
       kogoNodes[node.NodeID] = node;

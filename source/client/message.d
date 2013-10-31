@@ -1,17 +1,43 @@
 import std.conv;
 
-struct Message
+struct Message(char quote = "\"", char escape = "\\")
 {
   string[] args;
 
-  this(string msg)
+  string readArg(string msg, int ref i = 0)
   {
     int argStart = 0;
+    bool quoted = false;
     
-    //TODO: Parse a message.
-    for(int i = 0; i < msg.length; i++)
+    int startIndex = i;
+    Appender!(string) output;
+    
+    for( ; i < msg.length; i++ )
       {
-        
+        switch( msg[index] )
+          {
+          case '\\':
+            output.put(msg[startindex..index]);
+            startIndex = ++i;
+            break;
+          case '"':
+            quoted = !quoted;
+            goto case ' '; //Explicite fall through
+          case ' ':
+            if( ! quoted ) {
+              if( output.data.length == 0) {
+                return msg[startIndex..i];
+              } else {
+                output.put(sgfData[startIndex..i]);
+                return output.data;
+              }
+            }
+            break;
+          default:
+            continue; 
+          }
       }
+
+    return "";
   }
 }
