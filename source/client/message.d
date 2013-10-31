@@ -4,7 +4,7 @@ struct Message(char quote = "\"", char escape = "\\")
 {
   string[] args;
 
-  string readArg(string msg, int ref i = 0)
+  string readArg(string msg, ref int i = 0)
   {
     int argStart = 0;
     bool quoted = false;
@@ -17,8 +17,8 @@ struct Message(char quote = "\"", char escape = "\\")
         switch( msg[index] )
           {
           case '\\':
-            output.put(msg[startindex..index]);
-            startIndex = ++i;
+            output.put(msg[startindex..i]);
+            startIndex = ++i; //Skip the next character
             break;
           case '"':
             quoted = !quoted;
