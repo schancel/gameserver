@@ -1,6 +1,6 @@
 import std.conv;
 
-struct Message(char quote = "\"", char escape = "\\")
+struct Message(char quote = '\"', char escape = '\\', char delimister=' ')
 {
   string[] args;
 
@@ -16,11 +16,11 @@ struct Message(char quote = "\"", char escape = "\\")
       {
         switch( msg[index] )
           {
-          case '\\':
+          case escape:
             output.put(msg[startindex..i]);
             startIndex = ++i; //Skip the next character
             break;
-          case '"':
+          case quote:
             quoted = !quoted;
             if( quoted ) {
               startIndex = i + 1; //We don't want to read the initial quote.
@@ -28,7 +28,7 @@ struct Message(char quote = "\"", char escape = "\\")
             } else {
               goto case ' '; //Explicite fall through
             }
-          case ' ':
+          case delimiter:
             if( ! quoted ) {
               if( output.data.length == 0) {
                 return msg[startIndex..i];
