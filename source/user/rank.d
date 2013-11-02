@@ -7,7 +7,6 @@ import std.array;
 import std.algorithm : min;
 import std.math : sqrt, pow, abs;
 
-
 static immutable int DAN_RANK = 17;
 static immutable int PRO_RANK = 26; //TODO: Implement this in the conversions.
 static immutable int RANK_DIFFERENCE = 1;
