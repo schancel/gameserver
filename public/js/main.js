@@ -54,15 +54,16 @@ UserInterface.prototype.clickSubmit = function() {
     var tab = this.tabview.get('selection') ;
     if( tab instanceof this.Y.ChannelTab )
     {
-		var input = tab.get('panelNode').one('.input');
-		if( input.charAt(0) != '/' )
-			this.connection.Msg(tab.get('channelName'), input.get('value') );
-		else
-		{
-			var cmd = JSON.stringify(input.substring(1));
-			input.connection[cmd[0]].call(input.connection, cmd.slice(1));
-		}
-		input.set('value', '');
+        var inputBox = tab.get('panelNode').one('.input'), inputVal = inputBox.get('value');
+        
+	if( inputVal.charAt(0) != '/' )
+	    this.connection.Msg(tab.get('channelName'), inputVal );
+	else
+	{
+	    var cmd = JSON.stringify(inputVal.substring(1));
+	    this.connection[cmd[0]].call(this.connection, cmd.slice(1));
+	}
+	inputBox.set('value', '');
     }
 }
 
@@ -95,8 +96,10 @@ function UserInterface (Y) {
 	evt.preventDefault();
     });
 
-    Y.on('keydown', function(evt) { 
-	if(evt.keyCode == 13)
+//    Y.on('keydown', function(e) { alert('foof'); });
+
+    Y.on('keydown', function(evt) {
+	if( evt.keyCode === 13 )
 	{
 	    self.clickSubmit();
 	    evt.preventDefault();
@@ -106,4 +109,4 @@ function UserInterface (Y) {
     Y.on('focus', function(e) { document.title=self.titleCache; self.messages=0; })
 }
 
-YUI().use('node',  'event', 'tabview', 'model', 'model-list', 'channeltab', function(Y) { new  UserInterface(Y); } )
+YUI().use('event', 'node', 'node-base',  'tabview', 'model', 'model-list', 'channeltab', function(Y) { new  UserInterface(Y); } )
