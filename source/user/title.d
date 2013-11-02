@@ -2,7 +2,7 @@ module user.title;
 
 class Title {
 
-	this(int id, string text, boolean unique)
+	this(int id, string text, bool unique)
 	{
 		this.id = id;
 		this.text = text;
@@ -21,8 +21,8 @@ class Title {
 	
 	
 	private int id;
-	private String text;
-	private boolean unique;
+	private string text;
+	private bool unique;
 	
 	public int getId()
 	{
@@ -34,7 +34,7 @@ class Title {
 		return text;
 	}
 	
-	public boolean isUnique()
+	public bool isUnique()
 	{
 		return unique;
 	}

@@ -44,7 +44,7 @@ class UserInfo
 	{
 		auto friendEntry = username in relations;
 		if(friendEntry) return *friendEntry; 
-		else return 0;
+		else return RelationTypes.None;
 	}
 
 	public void setRelation(string username, RelationTypes type)

@@ -61,10 +61,10 @@ unittest {
     import std.stdio;
     auto msg = "TELL \"Side Effect\" \"Hello how are you?";
     auto arg = msg.readArg();
-    assert( arg == "TELL", "First arg wrong:" ~arg ~ " " ~ msg);
+    assert( arg == "TELL", "First arg wrong:" ~arg ~ " Msg:" ~ msg);
     arg = msg.readArg(); 
-    assert( arg == "Side Effect", "Second arg wrong: " ~arg ~ " " ~ msg);
+    assert( arg == "Side Effect", "Second arg wrong: " ~arg ~ " Msg: " ~ msg);
     arg = msg.readAll(); 
-    assert( arg == "Hello how are you?", "Third arg wrong: " ~arg ~ " " ~ msg);
+    assert( arg == "Hello how are you?", "Third arg wrong: " ~arg ~ " Msg: " ~ msg);
 
 }
