@@ -4,7 +4,8 @@ import std.format : formattedWrite;
 import std.conv;
 import std.exception : enforce;
 import std.array;
-import std.math;
+import std.algorithm : min;
+import std.math : sqrt, pow, abs;
 
 
 static immutable int DAN_RANK = 17;
@@ -15,6 +16,7 @@ struct Rank //Implement ELO ratings and their conversion to Go ranks.
 { 
   double rating;
   double uncertainty;
+  int games;
   /**
    * Constructor for rank.  Takes in rating and uncertainty.
 
@@ -22,9 +24,11 @@ struct Rank //Implement ELO ratings and their conversion to Go ranks.
    * uncertaint = Uncertainty for rank.   The default value is very large as we don't know what a new rank is yet.
    *              This is used in the algorithm for adjustments.
    */
-  this (int _rating = 0, double uncertainty = 10000000)
+  this (int _rating = 0, double _uncertainty = 10000000, int _games = 0)
   {
     rating = _rating;
+    uncertainty = _uncertainty;
+    games = _games;
   }
 
   this (string _rating)
@@ -68,8 +72,8 @@ void AdjustRanks( ref Rank winner, ref Rank loser, int handicap, int komi )
   double Ql = pow(2, loser.rating );
 
 
-  Winner.rating = Winner.rating + (1 - (Qb/(Qw+Ql))) * 1/loser.uncertainty;
-  Loser.rating = Loser.rating - (Ql/(Qw+Ql)) * 1/winner.uncertainty;
+  winner.rating = winner.rating + (1 - (Qw/(Qw+Ql))) * 1/loser.uncertainty;
+  loser.rating = loser.rating - (Ql/(Qw+Ql)) * 1/winner.uncertainty;
 
   winner.games += 1;
   loser.games += 1;
