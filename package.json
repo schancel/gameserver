@@ -3,9 +3,7 @@
     "description": "Start of a go server using websockets",
     "homepage": "http://example.org",
     "copyright": "Copyright © 2000, Shammah Chancellor",
-    "authors": [
-	"Shammah Chancellor"
-    ],
-    "dependencies": { "vibe-d": "~master", "mysql-native": "~master" },
+    "authors": [ "Shammah Chancellor", "Side Effect" ],
+    "dependencies": { "vibe-d": ">=0.7.17", "mysql-native": ">=0.0.10" },
     "lflags": [ "-L/usr/local/lib/" ]
 }

@@ -19,24 +19,23 @@ class Title {
 		return ++currentId;
 	}
 	
-	
 	private int id;
 	private string text;
 	private bool unique;
 	
-	public int getId()
+	@property public int getId()
 	{
 		return id;
 	}
 	
-	public string getText()
-	{
-		return text;
-	}
-	
-	public bool isUnique()
+    @property  public bool isUnique()
 	{
 		return unique;
 	}
+
+    override string toString()
+    {
+        return text;
+    }
 }
 

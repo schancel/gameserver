@@ -1,54 +1,80 @@
+module user.userinfo;
+
 import std.stdio;
 import std.container;
 import std.conv;
 import std.array;
 
-import redis;
+
+import user.rank;
 
 enum RelationTypes
 {
-	None = 0,
-	Friend = 1,
-	Blocked = 2
+    None = 0,
+    Friend = 1,
+    Blocked = 2
 }
 
-class UserInfo
+shared class UserInfo
 {
-	private int id;
-	private string username;
-	private int titleId;
-	private int rating;
-	private RelationTypes[string] relations;
+    private int id;
+    private string username;
+    private int titleId;
+    private Rank rating;
+    private RelationTypes[string] relations;
 
-	@property public int Id()
-	{
-		return id;
-	}
+    this( string username = "AnonymousCoward")
+    {
+        this.Username = username;
+    }
 
-	@property public string Username()
-	{
-		return username;
-	}
+    @property public int Id()
+    {
+        return id;
+    }
 
-	@property public int TitleId()
-	{
-		return titleId;
-	}
+    @property public string Username()
+    {
+        return username;
+    }
 
-	@property public int Rating()
-	{
-		return rating;
-	}
+    @property public void Username(string value)
+    {
+        username = value;
+    }
 
-	public RelationTypes getRelation(string username)
-	{
-		auto friendEntry = username in relations;
-		if(friendEntry) return *friendEntry; 
-		else return RelationTypes.None;
-	}
+    @property public int TitleId()
+    {
+        return titleId;
+    }
 
-	public void setRelation(string username, RelationTypes type)
-	{
-		this.relations[username] = type;
-	}
+    @property public void TitleId(int value)
+    {
+        titleId = value;
+    }
+
+    @property public Rank Rating()
+    {
+        return rating;
+    }
+
+    @property public void Rating(Rank value)
+    {
+        rating = value;
+    }
+
+    public RelationTypes getRelation(string username)
+    {
+        auto friendEntry = username in relations;
+
+        if(friendEntry)
+            return *friendEntry; 
+        else
+            return RelationTypes.None;
+    }
+
+    public void setRelation(string username, RelationTypes type)
+    {
+        this.relations[username] = type;
+    }
 }

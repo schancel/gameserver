@@ -1,9 +1,9 @@
 module user.rank;
 
 import std.format : formattedWrite;
-import std.conv;
+import std.conv : to;
 import std.exception : enforce;
-import std.array;
+import std.array : Appender;
 import std.algorithm : min;
 import std.math : sqrt, pow, abs;
 
@@ -52,7 +52,7 @@ struct Rank //Implement ELO ratings and their conversion to Go ranks.
 
   string toString()
   {
-    auto writer = appender!string();
+    auto writer = Appender!string();
     
     if( rating > DAN_RANK ) {
       formattedWrite( writer, "%sd", rating - DAN_RANK / RANK_DIFFERENCE );
