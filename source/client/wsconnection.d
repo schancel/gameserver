@@ -12,6 +12,8 @@ import vibe.http.websockets;
 import vibe.core.concurrency;
 import vibe.stream.operations;
 
+import msgpack;  //Msg Pack For messages
+
 import client.connection;
 import client.messages;
 import gameserver.channels;
@@ -38,8 +40,8 @@ class WSConnection : ConnectionInfo
         {
             try
             {
-                auto msg = socket.receiveText();
-                //mh.handleMessage( msg );
+                auto msgData = socket.receiveBinary();
+                shared IMessage msg = deserialize(msgData);
             }
             catch( Exception ex )
             {
@@ -55,11 +57,10 @@ class WSConnection : ConnectionInfo
         debug writefln("%d: writetask", curThread);
         while(active)
         {
-            receive( (shared Message m) {
+            receive( (shared IMessage m) {
                 debug writefln("%d: Sending Message", curThread); 
 
-                socket.write(m.toString);
-                socket.write(" ");
+                //socket.write(msgpack.pack!(false, shared IMessage)(m));
             });
         }
     }

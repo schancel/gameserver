@@ -15,7 +15,7 @@ import vibe.core.concurrency;
 import vibe.core.log;
 import vibe.stream.operations;
 
-import client.messaging;
+import client.messages;
 import gameserver.channels;
 import user.userinfo;
 
@@ -41,13 +41,13 @@ class ConnectionInfo
         }
     }
 
-    void broadcast( shared Message m )
+    void broadcast( shared IMessage m )
     {
         foreach( chan; subscriptions.byKey() )
             chan.send(m);
     }
 
-    void send( shared Message m )
+    void send( shared IMessage m )
     {
         writeTask.send(m);
     }

@@ -22,7 +22,6 @@ import gameserver.channels;
 import user.userinfo;
 import util.util;
 import client.messages;
-
 /****************************************************************************************
 
  *****************************************************************************************/
@@ -53,7 +52,7 @@ class IGSConnection : ConnectionInfo
         {
             try
             {           
-                send(new shared Message("1 5"));
+                //send(new shared ChatMessage("1 5"));
                 auto msg = cast(string)socket.readLine();
                 writefln("%s", msg);
                 mh.handleMessage( msg );
@@ -72,16 +71,10 @@ class IGSConnection : ConnectionInfo
         debug writefln("%d: IGS WriteTask Started", curThread);
         while(active)
         {
-            receive( (shared Message m) {
+            receive( (shared IMessage m) {
                 debug writefln("%d: Sending Message", curThread); 
+               
 
-                if(m.opCode == OpCode.Join) 
-                {
-                    auto jm = cast(JoinMessage) m;
-                    socket.write("whoot Join msg type\n");
-                }
-
-                socket.write(m.toString);
                 socket.write("\r\n");
             });
         }
@@ -112,7 +105,7 @@ class IGSMessageHandler
         switch( cmd.toUpper() )
         {
             /*
-             Abuse the runtime-reflections to delegate out 
+             Abuse compile-time-reflections to delegate out 
              */
             foreach(memberFunc; __traits(allMembers, IGSMessageHandler) )
             {

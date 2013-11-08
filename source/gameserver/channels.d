@@ -11,8 +11,6 @@ import std.conv;
 import client.messages;
 import client.connection;
 
-alias Message = client.messages.Message;
-
 class Channel
 {
     static Channel[string] channels;
@@ -42,7 +40,7 @@ class Channel
         channels[name] = this;
         observer = runTask({
             while(active) {
-                receive((shared Message m) {
+                receive((shared IMessage m) {
                     if(active)
                         foreach( subscriber; subscriptions.byKey())
                         {
@@ -58,7 +56,7 @@ class Channel
         active = false;
     }
 
-    void send(shared Message m)
+    void send(shared IMessage m)
     {
         observer.send(m);
     }
@@ -96,7 +94,7 @@ void unsubscribeToChannel(ConnectionInfo conn, string channelName)
 }
 
 
-void sendToChannel( string channelName, shared Message m)
+void sendToChannel( string channelName, shared IMessage m)
 {
     if( Channel* p = channelName in Channel.channels )  {
         (*p).send(m);
