@@ -4,6 +4,5 @@
     "homepage": "http://example.org",
     "copyright": "Copyright © 2000, Shammah Chancellor",
     "authors": [ "Shammah Chancellor", "Side Effect" ],
-    "dependencies": { "vibe-d": ">=0.7.17", "mysql-native": ">=0.0.10", "msgpack-d": "~master" },
-    "lflags": [ "-L/usr/local/lib/" ]
+    "dependencies": { "vibe-d": "~master", "mysql-native": "~master", "msgpack-d": "~master" },
 }

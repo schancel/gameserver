@@ -23,7 +23,7 @@ void initiateWebsocket(HTTPServerRequest req,
                        HTTPServerResponse res)
 {
     auto wsd = handleWebSockets( function(WebSocket ws) {
-        scope WSConnection ci = new WSConnection(ws);
+        scope auto ci = new WSConnection(ws);
         
         ci.spawn();
     } );
@@ -33,12 +33,12 @@ void initiateWebsocket(HTTPServerRequest req,
 
 void initiateTelnet(TCPConnection conn)
 {
-    scope IGSConnection ci = new IGSConnection(conn);
+    scope auto ci = new IGSConnection(conn);
     
     ci.spawn();
 }
 
-shared static this() 
+static this() 
 {
     auto router = new URLRouter;
 

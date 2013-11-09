@@ -25,16 +25,16 @@ import client.messages;
 /****************************************************************************************
 
  *****************************************************************************************/
-class IGSConnection : ConnectionInfo
+ class IGSConnection : ConnectionInfo
 { 
-    TCPConnection socket;
-    IGSMessageHandler mh;
+    private TCPConnection socket;
+    private IGSMessageHandler mh;
 
     this(TCPConnection _conn)
     {
         super();
         socket = _conn;
-        mh = new IGSMessageHandler(this);
+        mh = new  IGSMessageHandler(this);
         curThread = 1; //TODO: Fix this
 
         socket.write("Login: ");
@@ -42,7 +42,7 @@ class IGSConnection : ConnectionInfo
         socket.write("Password: ");
         socket.readLine();
 
-        user = new shared UserInfo();
+        user = new UserInfo();
     }
 
     void readLoop()
@@ -51,8 +51,8 @@ class IGSConnection : ConnectionInfo
         while(socket.connected)
         {
             try
-            {           
-                //send(new shared ChatMessage("1 5"));
+            {
+                //send(new ChatMessage("1 5"));
                 auto msg = cast(string)socket.readLine();
                 writefln("%s", msg);
                 mh.handleMessage( msg );
@@ -62,7 +62,7 @@ class IGSConnection : ConnectionInfo
                 writeln(ex.msg);
             }
         } 
-        send(new shared(ShutdownMessage)());
+        send(new ShutdownMessage());
         active = false;
     }
     
@@ -71,11 +71,13 @@ class IGSConnection : ConnectionInfo
         debug writefln("%d: IGS WriteTask Started", curThread);
         while(active)
         {
-            receive( (shared IMessage m) {
-                debug writefln("%d: Sending Message", curThread); 
-               
-
-                socket.write("\r\n");
+            receive( (Message m) {
+                if(m.supportsIGS)
+                {
+                    debug writefln("%d: Sending Message", curThread); 
+                    socket.write(m.toIGSString());
+                    socket.write("\r\n");
+                }
             });
         }
     }
@@ -153,7 +155,7 @@ class IGSMessageHandler
     void cmdMsg(string channel, string message)
     {
         writefln("%s: Sent message to #%s: %s", ci.user.Username, channel, message);
-        sendToChannel(channel, new shared ChatMessage(ci.user, channel, message));
+        sendToChannel(channel, new ChatMessage(ci.user, channel, message));
     }
 
     void cmdWho(string channel)

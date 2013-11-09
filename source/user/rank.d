@@ -7,9 +7,9 @@ import std.array : Appender;
 import std.algorithm : min;
 import std.math : sqrt, pow, abs;
 
-static immutable int DAN_RANK = 17;
-static immutable int PRO_RANK = 26; //TODO: Implement this in the conversions.
-static immutable int RANK_DIFFERENCE = 1;
+static const int DAN_RANK = 17;
+static const int PRO_RANK = 26; //TODO: Implement this in the conversions.
+static const int RANK_DIFFERENCE = 1;
 
 struct Rank //Implement ELO ratings and their conversion to Go ranks.
 { 

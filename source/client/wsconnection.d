@@ -30,7 +30,7 @@ class WSConnection : ConnectionInfo
     {
         super();
         socket = _conn;
-        user = new shared UserInfo();
+        user = new UserInfo();
         curThread = socket.toHash();
     }
 
@@ -41,26 +41,26 @@ class WSConnection : ConnectionInfo
             try
             {
                 auto msgData = socket.receiveBinary();
-                shared IMessage msg = deserialize(msgData);
+                auto msg = deserialize(msgData);
             }
             catch( Exception ex )
             {
                 debug writeln(ex.msg);
             }
         } 
-        send(new shared(ShutdownMessage));
+        send(new ShutdownMessage);
         active = false;
     }
-    
+
     private void writeLoop()
     {
         debug writefln("%d: writetask", curThread);
         while(active)
         {
-            receive( (shared IMessage m) {
+            receive( (Message m) {
                 debug writefln("%d: Sending Message", curThread); 
 
-                //socket.write(msgpack.pack!(false, shared IMessage)(m));
+                //socket.write(msgpack.pack!(false, Message)(m));
             });
         }
     }

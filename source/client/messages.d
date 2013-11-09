@@ -1,8 +1,64 @@
 module client.messages;
+import client.connection;
 
 import user.userinfo;
 import std.typecons;
 import msgpack;
+
+struct OpCoder
+{
+    ubyte opCode;
+}
+
+class Message
+{
+    void handleMessage(ConnectionInfo ci ) 
+    {
+
+    }
+
+    bool supportsIGS() { return false; }
+    
+    string toIGSString() { return null; }
+}
+
+@OpCoder(1)
+class JoinMessage : Message
+{
+    this() pure shared
+    {
+    }
+}
+
+@OpCoder(2)
+class ChatMessage : Message
+{
+    UserInfo user;
+    string channel;
+    string message;
+
+    this(UserInfo user, string channel, string msg ) pure
+    {
+        this.user = user;
+        this.message = msg;
+        this.channel = channel;
+    }
+
+    this() pure
+    {
+
+    }
+}
+
+@OpCoder(3)
+class ShutdownMessage : Message
+{
+    this() pure
+    {
+    }
+}
+
+alias hack(alias t) = t;
 
 
 /*** 
@@ -10,55 +66,11 @@ import msgpack;
  * enum OpCode : ubyte
  * {
  *     None = 0,
- *     Join = 1,
+ *     JoinMessage = 1,
  *     ChatMessage = 2,
- *     Shutdown = 3
+ *     ShutdownMessage = 3
  * }
  */
-
-struct OpCoder
-{
-    ubyte opCode;
-}
-
-@OpCoder(1)
-shared class JoinMessage : IMessage
-{
-    this()
-    {
-    }
-    }
-
-@OpCoder(2)
-shared class ChatMessage : IMessage
-{
-    UserInfo user;
-    string channel;
-    string message;
-
-    this(shared UserInfo user, string channel, string msg ) 
-    {
-        this.user = user;
-        this.message = msg;
-        this.channel = channel;
-    }
-
-    this()
-    {
-
-    }
-}
-
-@OpCoder(3)
-shared class ShutdownMessage : IMessage
-{
-    this()
-    {
-    }
-}
-
-alias hack(alias t) = t;
-
 string GenEnum(string Name) {
     bool needsComma = false;
     string foo = "enum " ~ Name ~ " {";
@@ -80,6 +92,8 @@ string GenEnum(string Name) {
     return foo;
 }
 
+
+//TODO: Made this not allocate more than necessary.  Surely we can write the needed byte, and then write the rest to the socket?
 ubyte[] serialize(T)(T msg) {
     ubyte[] ret;
     foreach( tra; __traits(getAttributes, typeof(msg)))
@@ -93,12 +107,12 @@ ubyte[] serialize(T)(T msg) {
     }
 }
 
-shared(IMessage) deserialize(ubyte[] msg) {
+Message deserialize(ubyte[] msg) {
     import std.exception;
     enforce(msg.length > 1, "Msg too short");
     ubyte code = msg[0];
     msg = msg[1..$];
-    shared IMessage ret;
+    Message ret;
 
     switch( code ){
         alias parent = hack!(__traits(parent, OpCoder));
@@ -110,8 +124,8 @@ shared(IMessage) deserialize(ubyte[] msg) {
                 static if ( is( typeof(tra) == OpCoder ) )
                 {
                     case tra.opCode:
-                    shared eleMen temp = new shared eleMen();
-                    msgpack.unpack!(shared eleMen)(msg, temp);
+                    eleMen temp = new eleMen();
+                    msgpack.unpack!(eleMen)(msg, temp);
                     ret = temp;
                     break;
                 }
@@ -125,7 +139,3 @@ shared(IMessage) deserialize(ubyte[] msg) {
 
 
 mixin(GenEnum("OpCode"));
-
-shared interface IMessage
-{
-}

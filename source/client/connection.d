@@ -23,7 +23,7 @@ class ConnectionInfo
 { 
     protected Task writeTask, readTask;
     bool active;
-    shared UserInfo user;
+    UserInfo user;
     bool[Channel] subscriptions;
     ulong curThread;
 
@@ -41,13 +41,13 @@ class ConnectionInfo
         }
     }
 
-    void broadcast( shared IMessage m )
+    void broadcast( immutable Message m )
     {
         foreach( chan; subscriptions.byKey() )
             chan.send(m);
     }
 
-    void send( shared IMessage m )
+    void send( immutable Message m )
     {
         writeTask.send(m);
     }

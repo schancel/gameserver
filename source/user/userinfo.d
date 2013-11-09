@@ -15,7 +15,7 @@ enum RelationTypes
     Blocked = 2
 }
 
-shared class UserInfo
+class UserInfo
 {
     private int id;
     private string username;
@@ -23,37 +23,37 @@ shared class UserInfo
     private Rank rating;
     private RelationTypes[string] relations;
 
-    this( string username = "AnonymousCoward")
+    this( string username = "AnonymousCoward") pure 
     {
         this.Username = username;
     }
 
-    @property public int Id()
+    @property public int Id() pure const
     {
         return id;
     }
 
-    @property public string Username()
+    @property public string Username() pure const
     {
         return username;
     }
 
-    @property public void Username(string value)
+    @property public void Username(string value) pure
     {
         username = value;
     }
 
-    @property public int TitleId()
+    @property public int TitleId() pure const
     {
         return titleId;
     }
 
-    @property public void TitleId(int value)
+    @property public void TitleId(int value) pure 
     {
         titleId = value;
     }
 
-    @property public Rank Rating()
+    @property public Rank Rating() pure const
     {
         return rating;
     }
@@ -63,7 +63,7 @@ shared class UserInfo
         rating = value;
     }
 
-    public RelationTypes getRelation(string username)
+    public RelationTypes getRelation(string username) pure
     {
         auto friendEntry = username in relations;
 
@@ -73,7 +73,7 @@ shared class UserInfo
             return RelationTypes.None;
     }
 
-    public void setRelation(string username, RelationTypes type)
+    public void setRelation(string username, RelationTypes type) pure
     {
         this.relations[username] = type;
     }

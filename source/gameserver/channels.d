@@ -7,6 +7,7 @@ import std.container;
 import std.stdio;
 import core.time;
 import std.conv;
+import std.string : toUpper;
 
 import client.messages;
 import client.connection;
@@ -29,7 +30,7 @@ class Channel
         } 
         else
         {
-            return new Channel(channelName);
+            return new Channel(channelName); //Channel adds itself to the list of channels.
         }
     }
     
@@ -40,7 +41,7 @@ class Channel
         channels[name] = this;
         observer = runTask({
             while(active) {
-                receive((shared IMessage m) {
+                receive((immutable Message m) {
                     if(active)
                         foreach( subscriber; subscriptions.byKey())
                         {
@@ -56,7 +57,7 @@ class Channel
         active = false;
     }
 
-    void send(shared IMessage m)
+    void send(immutable Message m)
     {
         observer.send(m);
     }
@@ -78,25 +79,24 @@ class Channel
 
 void subscribeToChannel(ConnectionInfo conn, string channelName)
 {
-    Channel chan = Channel.getChannel(channelName);
+    Channel chan = Channel.getChannel(channelName.toUpper());
 
-    chan.send(new shared JoinMessage());
+    chan.send(new JoinMessage());
     chan.subscribe(conn);
     conn.subscribe(chan);
 }
 
 void unsubscribeToChannel(ConnectionInfo conn, string channelName)
 {
-    Channel chan = Channel.getChannel(channelName);
-    
+    Channel chan = Channel.getChannel(channelName.toUpper());
+
     chan.unsubscribe(conn);
     conn.unsubscribe(chan);
 }
 
-
-void sendToChannel( string channelName, shared IMessage m)
+void sendToChannel( string channelName, immutable Message m)
 {
-    if( Channel* p = channelName in Channel.channels )  {
+    if( Channel* p = channelName.toUpper() in Channel.channels )  {
         (*p).send(m);
     }
 }
