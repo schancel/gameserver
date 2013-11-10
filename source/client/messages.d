@@ -1,15 +1,37 @@
 module client.messages;
 import client.connection;
 
+
+import vibe.core.stream;
+
 import user.userinfo;
 import std.typecons;
 import msgpack;
 
+///Attribute struct to identify what the opcode for a particular message in the protocol is.
 struct OpCoder
 {
     ubyte opCode;
 }
 
+///Mixin to create a virtual function which returns the opcode of the class.
+template opCode()
+{
+    override ubyte opCode()
+    {
+        foreach( tra; __traits(getAttributes, typeof(this)))
+        {
+            static if ( is( typeof(tra) == OpCoder ) )
+            {
+                return tra.opCode;
+            }
+        }
+        return 0;
+    }
+}
+//
+
+@OpCoder(0)
 class Message
 {
     void handleMessage(ConnectionInfo ci ) 
@@ -20,14 +42,18 @@ class Message
     bool supportsIGS() { return false; }
     
     string toIGSString() { return null; }
+
+    ubyte opCode() { return 0; }
 }
 
 @OpCoder(1)
 class JoinMessage : Message
 {
-    this() pure shared
+    this() pure 
     {
     }
+
+    mixin client.messages.opCode;
 }
 
 @OpCoder(2)
@@ -48,6 +74,8 @@ class ChatMessage : Message
     {
 
     }
+
+    mixin client.messages.opCode;
 }
 
 @OpCoder(3)
@@ -56,55 +84,49 @@ class ShutdownMessage : Message
     this() pure
     {
     }
+    mixin client.messages.opCode;
 }
 
 alias hack(alias t) = t;
 
 
-/*** 
- * Desired output:
- * enum OpCode : ubyte
- * {
- *     None = 0,
- *     JoinMessage = 1,
- *     ChatMessage = 2,
- *     ShutdownMessage = 3
- * }
- */
-string GenEnum(string Name) {
-    bool needsComma = false;
-    string foo = "enum " ~ Name ~ " {";
-    alias parent = hack!(__traits(parent, OpCoder));
-    foreach( ele; __traits(allMembers, parent))
-    {
-        alias eleMen = hack!(__traits(getMember, parent, ele));
-        foreach( tra; __traits(getAttributes, eleMen))
+void serialize(T)(OutputStream st, T msg) if ( is(T == Message) )
+{
+    st.write([msg.opCode]);
+    switch( msg.opCode ){
+        alias parent = hack!(__traits(parent, OpCoder));
+        foreach( ele; __traits(allMembers, parent))
         {
-            static if ( is( typeof(tra) == OpCoder ) )
+            alias eleMen = hack!(__traits(getMember, parent, ele));
+            foreach( tra; __traits(getAttributes, eleMen))
             {
-                import std.conv;
-                foo ~= (needsComma ? "," : "") ~ ele ~ "=" ~ to!string(tra.opCode) ;
-                needsComma = true;
+                static if ( is( typeof(tra) == OpCoder ) )
+                {
+                    case tra.opCode:
+                    eleMen temp = cast(eleMen)msg;
+                    st.write(msgpack.pack(temp));
+                    break;
+                }
             }
         }
+        default:
+            break;
     }
-    foo ~= " }";
-    return foo;
 }
 
-
-//TODO: Made this not allocate more than necessary.  Surely we can write the needed byte, and then write the rest to the socket?
-ubyte[] serialize(T)(T msg) {
+void serialize(T)(OutputStream st, T msg) if ( is(T : Message) && !is(T == Message) )
+{
     ubyte[] ret;
-    foreach( tra; __traits(getAttributes, typeof(msg)))
-    {
-        static if ( is( typeof(tra) == OpCoder ) )
-        {
-            ret ~= tra.opCode;
-            ret ~= msgpack.pack(msg);
-            return ret;
-        }
-    }
+    st.write([msg.opCode]);
+    st.write(msgpack.pack(msg));
+}
+
+unittest
+{
+    auto foo = new JoinMessage();
+    Message fooHidden = foo;
+    //assert( serialize(foo) == serialize(fooHidden) ); // Doesn't work since we don't have a stream
+    //TODO: Correct the unittest.
 }
 
 Message deserialize(ubyte[] msg) {
@@ -135,6 +157,28 @@ Message deserialize(ubyte[] msg) {
             ret = null;
     }
     return ret;
+}
+
+
+string GenEnum(string Name) {
+    bool needsComma = false;
+    string code = "enum " ~ Name ~ " {";
+    alias parent = hack!(__traits(parent, OpCoder));
+    foreach( ele; __traits(allMembers, parent))
+    {
+        alias eleMen = hack!(__traits(getMember, parent, ele));
+        foreach( tra; __traits(getAttributes, eleMen))
+        {
+            static if ( is( typeof(tra) == OpCoder ) )
+            {
+                import std.conv;
+                code ~= (needsComma ? "," : "") ~ ele ~ "=" ~ to!string(tra.opCode) ;
+                needsComma = true;
+            }
+        }
+    }
+    code ~= " }";
+    return code;
 }
 
 

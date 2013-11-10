@@ -60,7 +60,9 @@ class WSConnection : ConnectionInfo
             receive( (Message m) {
                 debug writefln("%d: Sending Message", curThread); 
 
-                //socket.write(msgpack.pack!(false, Message)(m));
+                socket.send( (scope OutgoingWebSocketMessage os) { 
+                    serialize(os, m);
+                });
             });
         }
     }
