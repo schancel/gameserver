@@ -41,11 +41,11 @@ class Channel
         channels[name] = this;
         observer = runTask({
             while(active) {
-                receive((immutable Message m) {
+                receive((shared Message m) {
                     if(active)
                         foreach( subscriber; subscriptions.byKey())
                         {
-                            subscriber.send(m);
+                            subscriber.send(cast(Message)m);
                         }
                 });
             }
@@ -57,9 +57,9 @@ class Channel
         active = false;
     }
 
-    void send(immutable Message m)
+    void send(Message m)
     {
-        observer.send(m);
+        observer.send(cast(shared)m);
     }
 
     void subscribe(ConnectionInfo conn) {
@@ -77,13 +77,13 @@ class Channel
     };
 }
 
-void subscribeToChannel(ConnectionInfo conn, string channelName)
+void subscribeToChannel(ConnectionInfo ci, string channelName)
 {
     Channel chan = Channel.getChannel(channelName.toUpper());
 
-    chan.send(new JoinMessage());
-    chan.subscribe(conn);
-    conn.subscribe(chan);
+    chan.subscribe(ci);
+    ci.subscribe(chan);
+    chan.send(new JoinedMessage(channelName, ci.user.Username));
 }
 
 void unsubscribeToChannel(ConnectionInfo conn, string channelName)
@@ -94,7 +94,7 @@ void unsubscribeToChannel(ConnectionInfo conn, string channelName)
     conn.unsubscribe(chan);
 }
 
-void sendToChannel( string channelName, immutable Message m)
+void sendToChannel( string channelName, Message m)
 {
     if( Channel* p = channelName.toUpper() in Channel.channels )  {
         (*p).send(m);

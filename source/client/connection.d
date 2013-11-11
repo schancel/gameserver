@@ -41,15 +41,15 @@ class ConnectionInfo
         }
     }
 
-    void broadcast( immutable Message m )
+    void broadcast( Message m )
     {
         foreach( chan; subscriptions.byKey() )
             chan.send(m);
     }
 
-    void send( immutable Message m )
+    void send( Message m )
     {
-        writeTask.send(m);
+        writeTask.send(cast(shared)m);
     }
 
     void subscribe(Channel chan) {

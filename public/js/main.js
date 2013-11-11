@@ -12,17 +12,17 @@ YUI.GlobalConfig =
 //Context will be the message itself
 UserInterface.prototype.protocol =  function(self)
 {
-    this[1] = function(msg) //JoinMessage
+    this[OpCodes.JoinedMessage] = function(channel, who)
     {
-	var tab = new self.Y.ChannelTab({channelName:msg.channel });
-	self.channels[msg.channel] = tab;
+	var tab = new self.Y.ChannelTab({channelName:channel });
+	self.channels[channel] = tab;
 	self.tabview.add( tab , 0 ); 
 	self.tabview.selectChild(0);
 //	self.connection.Who(msg.channel);
     }
-    this[2] = function(msg) //ChatMessage
+    this[OpCodes.OutgoingMessage] = function(user,channel,message) //OutgoingChatMessage
     {
-	self.channels[channelName].writeToChannel(msg.who, msg.message );
+	self.channels[channel].writeToChannel(user, message );
 
 	if( ! document.hasFocus() )
 	{

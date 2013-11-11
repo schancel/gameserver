@@ -54,8 +54,7 @@ import client.messages;
             {
                 //send(new ChatMessage("1 5"));
                 auto msg = cast(string)socket.readLine();
-                writefln("%s", msg);
-                mh.handleMessage( msg );
+                mh.handleInput( msg );
             }
             catch( Exception ex )
             {
@@ -71,7 +70,9 @@ import client.messages;
         debug writefln("%d: IGS WriteTask Started", curThread);
         while(active)
         {
-            receive( (Message m) {
+            receive( (shared Message m_) {
+                auto m = cast(Message)m_; //Remove shared
+
                 if(m.supportsIGS)
                 {
                     debug writefln("%d: Sending Message", curThread); 
@@ -101,7 +102,7 @@ class IGSMessageHandler
         ci = _ci;
     }
     
-    void handleMessage(string msg)
+    void handleInput(string msg)
     {
         string cmd = msg.readArg();
         switch( cmd.toUpper() )
@@ -136,8 +137,7 @@ class IGSMessageHandler
     }
     
     void cmdJoin(string channel) {
-        writefln("%s: Joined channel %s", ci.user.Username, channel);
-        subscribeToChannel( ci, channel );
+        new JoinMessage(channel).handleMessage(ci);
     }
     
     void cmdPart(string channel)
@@ -155,7 +155,7 @@ class IGSMessageHandler
     void cmdMsg(string channel, string message)
     {
         writefln("%s: Sent message to #%s: %s", ci.user.Username, channel, message);
-        sendToChannel(channel, new ChatMessage(ci.user.Username, channel, message));
+        sendToChannel(channel, new OutgoingMessage(ci.user.Username, channel, message));
     }
 
     void cmdWho(string channel)

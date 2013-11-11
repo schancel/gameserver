@@ -17,7 +17,7 @@ import vibe.data.json;
 import client.connection;
 import client.igsconnection;
 import client.wsconnection;
-
+import client.messages;
 
 void initiateWebsocket(HTTPServerRequest req,
                        HTTPServerResponse res)
@@ -44,9 +44,11 @@ static this()
 
     router
         .get("*", serveStaticFiles("./public/"))
-            .get("/websocket", &initiateWebsocket)
+            .get("/websocket", &initiateWebsocket) 
+            .get("/js/rpc_bindings.js", (req, res) { immutable string jsBindings = JavascriptBindings(); res.writeBody(jsBindings); })
             .get("/", staticRedirect("/index.html"));
 
+    setLogLevel(LogLevel.diagnostic);
     setLogFile("log.txt");
 
     auto settings = new HTTPServerSettings;

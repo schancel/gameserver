@@ -52,12 +52,12 @@ ServerConnection.prototype.onMessage = function(self)
 {
     return function (evt)
     {
-        var data = new Uint8Array(evt.data, 1);
+        var data = new Uint8Array(evt.data);
 	var msg = msgpack.unpack(data.subarray(1));
 	if(typeof(self.handlers[data[0]]) != 'undefined') 
 	{
-	    self.handlers[data[0]].call(this, msg);
-	} 
+	    self.handlers[data[0]].apply(this, msg);
+	}
     };
 }
 
@@ -71,9 +71,10 @@ ServerConnection.prototype.onError = function(self)
 
 ServerConnection.prototype.doSend = function(type, message)
 {
-    var packed = msgpack.pack(message);
+    var i ;var packed = []
+    packed = msgpack.pack(message);
     var foo = new Uint8Array(packed.length+1);
-    foo[0] = type || 1; //TODO: get message type;
+    foo[0] = type || 0; //TODO: get message type;
     foo.set(packed,1);
 
     this.websocket.send(foo);
@@ -89,14 +90,4 @@ function ServerConnection(wsUri, inProtocol)
     this.websocket.onclose = this.onClose(this);
     this.websocket.onmessage =  this.onMessage(this);
     this.websocket.onerror = this.onError(this);
-}
-
-ServerConnection.prototype.Join = function(channel)
-{
-    this.doSend(1, {channel: channel});
-}
-
-ServerConnection.prototype.Msg = function(channel, message)
-{
-    this.doSend(2, {channel: channel, message:message});
 }

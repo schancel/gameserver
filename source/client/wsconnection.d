@@ -40,8 +40,13 @@ class WSConnection : ConnectionInfo
         {
             try
             {
+                import std.stdio;
                 auto msgData = socket.receiveBinary();
                 auto msg = deserialize(msgData);
+                if(msg !is null) 
+                {
+                    msg.handleMessage(this);
+                }
             }
             catch( Exception ex )
             {
@@ -57,7 +62,10 @@ class WSConnection : ConnectionInfo
         debug writefln("%d: writetask", curThread);
         while(active)
         {
-            receive( (Message m) {
+            receive( (shared Message m_) {
+                auto m = cast(Message)m_; //Remove shared.  
+                //Could use lock() but that would block other threads from reading.  Nobody should be mutating the message anyways.
+
                 debug writefln("%d: Sending Message", curThread); 
 
                 socket.send( (scope OutgoingWebSocketMessage os) { 
