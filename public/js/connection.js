@@ -3,7 +3,7 @@ ServerConnection.prototype.onOpen = function onOpen(self)
     return function(evt)
     {
 	var name = prompt("Enter a nickname");
-	self.Nick(name);
+	//self.Nick(name);
 
 	self.Join("Earth");
 	self.JoinLocal();
@@ -52,10 +52,11 @@ ServerConnection.prototype.onMessage = function(self)
 {
     return function (evt)
     {
-	var msg = JSON.parse(evt.data);
-	if(typeof(self.handlers[msg[0]]) != 'undefined') 
+        var data = new Uint8Array(evt.data, 1);
+	var msg = msgpack.unpack(data.subarray(1));
+	if(typeof(self.handlers[data[0]]) != 'undefined') 
 	{
-	    self.handlers[msg[0]].apply(this, msg.slice(1,msg.length));
+	    self.handlers[data[0]].call(this, msg);
 	} 
     };
 }
@@ -68,18 +69,34 @@ ServerConnection.prototype.onError = function(self)
     };
 }
 
-ServerConnection.prototype.doSend = function(message)
+ServerConnection.prototype.doSend = function(type, message)
 {
-    this.websocket.send(JSON.stringify(message));
+    var packed = msgpack.pack(message);
+    var foo = new Uint8Array(packed.length+1);
+    foo[0] = type || 1; //TODO: get message type;
+    foo.set(packed,1);
+
+    this.websocket.send(foo);
 }
 
 function ServerConnection(wsUri, inProtocol) 
 {
     this.websocket = new WebSocket(wsUri);
     this.handlers = inProtocol;
+    this.websocket.binaryType = "arraybuffer";
 
     this.websocket.onopen = this.onOpen(this);
     this.websocket.onclose = this.onClose(this);
     this.websocket.onmessage =  this.onMessage(this);
     this.websocket.onerror = this.onError(this);
+}
+
+ServerConnection.prototype.Join = function(channel)
+{
+    this.doSend(1, {channel: channel});
+}
+
+ServerConnection.prototype.Msg = function(channel, message)
+{
+    this.doSend(2, {channel: channel, message:message});
 }

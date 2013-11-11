@@ -15,7 +15,7 @@ struct OpCoder
 }
 
 ///Mixin to create a virtual function which returns the opcode of the class.
-template opCode()
+mixin template MessageMixin(Args...)
 {
     override ubyte opCode()
     {
@@ -28,6 +28,20 @@ template opCode()
         }
         return 0;
     }
+
+    static ubyte opCodeStatic()
+    {
+        foreach( tra; __traits(getAttributes, typeof(this)))
+        {
+            static if ( is( typeof(tra) == OpCoder ) )
+            {
+                return tra.opCode;
+            }
+        }
+        return 0;
+    }
+
+    //mixin MessagePackable!(Args);
 }
 //
 
@@ -44,26 +58,33 @@ class Message
     string toIGSString() { return null; }
 
     ubyte opCode() { return 0; }
+
+    static ubyte opCodeStatic() { return 0; }
 }
 
 @OpCoder(1)
 class JoinMessage : Message
 {
-    this() pure 
+    string channel;
+
+    this(string channel) pure 
     {
+        this.channel = channel;
     }
 
-    mixin client.messages.opCode;
+    this() pure { }
+
+    mixin client.messages.MessageMixin!("channel");
 }
 
 @OpCoder(2)
 class ChatMessage : Message
 {
-    UserInfo user;
+    string user;
     string channel;
     string message;
 
-    this(UserInfo user, string channel, string msg ) pure
+    this(string user, string channel, string msg ) pure
     {
         this.user = user;
         this.message = msg;
@@ -75,7 +96,7 @@ class ChatMessage : Message
 
     }
 
-    mixin client.messages.opCode;
+    mixin client.messages.MessageMixin!("user","channel","message");
 }
 
 @OpCoder(3)
@@ -84,29 +105,24 @@ class ShutdownMessage : Message
     this() pure
     {
     }
-    mixin client.messages.opCode;
+    mixin client.messages.MessageMixin;
 }
 
 alias hack(alias t) = t;
-
 
 void serialize(T)(OutputStream st, T msg) if ( is(T == Message) )
 {
     st.write([msg.opCode]);
     switch( msg.opCode ){
-        alias parent = hack!(__traits(parent, OpCoder));
-        foreach( ele; __traits(allMembers, parent))
+        foreach( ele; __traits(allMembers, client.messages))
         {
-            alias eleMen = hack!(__traits(getMember, parent, ele));
-            foreach( tra; __traits(getAttributes, eleMen))
+            alias eleMen = hack!(__traits(getMember, client.messages, ele));
+            static if ( is( eleMen : Message ) )
             {
-                static if ( is( typeof(tra) == OpCoder ) )
-                {
-                    case tra.opCode:
-                    eleMen temp = cast(eleMen)msg;
-                    st.write(msgpack.pack(temp));
-                    break;
-                }
+                case eleMen.opCodeStatic:
+                eleMen temp = cast(eleMen)msg;
+                st.write(msgpack.pack!(true)(temp));
+                break;
             }
         }
         default:
@@ -118,7 +134,7 @@ void serialize(T)(OutputStream st, T msg) if ( is(T : Message) && !is(T == Messa
 {
     ubyte[] ret;
     st.write([msg.opCode]);
-    st.write(msgpack.pack(msg));
+    st.write(msgpack.pack!(true)(msg));
 }
 
 unittest
@@ -137,20 +153,20 @@ Message deserialize(ubyte[] msg) {
     Message ret;
 
     switch( code ){
-        alias parent = hack!(__traits(parent, OpCoder));
-        foreach( ele; __traits(allMembers, parent))
+        foreach( ele; __traits(allMembers, client.messages))
         {
-            alias eleMen = hack!(__traits(getMember, parent, ele));
-            foreach( tra; __traits(getAttributes, eleMen))
+            alias eleMen = hack!(__traits(getMember, client.messages, ele));
+
+            static if ( is( eleMen : Message ) )
             {
-                static if ( is( typeof(tra) == OpCoder ) )
-                {
-                    case tra.opCode:
-                    eleMen temp = new eleMen();
-                    msgpack.unpack!(eleMen)(msg, temp);
-                    ret = temp;
-                    break;
-                }
+                import std.stdio;
+                case eleMen.opCodeStatic:
+                eleMen temp = new eleMen();
+                debug writeln(ele, msgpack.pack!(true)(new JoinMessage("Earth")));
+                debug writeln(ele, msg);
+                msgpack.unpack(msg, temp);
+                ret = temp;
+                break;
             }
         }
         default:
@@ -159,22 +175,30 @@ Message deserialize(ubyte[] msg) {
     return ret;
 }
 
+unittest
+{
+    import std.stdio;
+    auto temp = new JoinMessage("Earth");
+    msgpack.unpack(msgpack.pack(temp), temp);
+    writeln("Unpacked!");
+
+    msgpack.unpack!(true)(msgpack.pack!(true)(temp), temp);
+    writeln("Unpacked?");
+}
+
 
 string GenEnum(string Name) {
     bool needsComma = false;
     string code = "enum " ~ Name ~ " {";
-    alias parent = hack!(__traits(parent, OpCoder));
-    foreach( ele; __traits(allMembers, parent))
+    foreach( ele; __traits(allMembers, client.messages))
     {
-        alias eleMen = hack!(__traits(getMember, parent, ele));
-        foreach( tra; __traits(getAttributes, eleMen))
+        alias eleMen = hack!(__traits(getMember, client.messages, ele));
+
+        static if ( is( eleMen : Message ) )
         {
-            static if ( is( typeof(tra) == OpCoder ) )
-            {
-                import std.conv;
-                code ~= (needsComma ? "," : "") ~ ele ~ "=" ~ to!string(tra.opCode) ;
-                needsComma = true;
-            }
+            import std.conv;
+            code ~= (needsComma ? "," : "") ~ ele ~ "=" ~ to!string(eleMen.opCodeStatic) ;
+            needsComma = true;
         }
     }
     code ~= " }";

@@ -155,7 +155,7 @@ class IGSMessageHandler
     void cmdMsg(string channel, string message)
     {
         writefln("%s: Sent message to #%s: %s", ci.user.Username, channel, message);
-        sendToChannel(channel, new ChatMessage(ci.user, channel, message));
+        sendToChannel(channel, new ChatMessage(ci.user.Username, channel, message));
     }
 
     void cmdWho(string channel)

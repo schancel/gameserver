@@ -9,19 +9,20 @@ YUI.GlobalConfig =
 	}
     };
 
+//Context will be the message itself
 UserInterface.prototype.protocol =  function(self)
 {
-    this.JOIN = function(channelName)
+    this[1] = function(msg) //JoinMessage
     {
-	var tab = new self.Y.ChannelTab({channelName:channelName });
-	self.channels[channelName] = tab;
+	var tab = new self.Y.ChannelTab({channelName:msg.channel });
+	self.channels[msg.channel] = tab;
 	self.tabview.add( tab , 0 ); 
 	self.tabview.selectChild(0);
-	self.connection.Who(channelName);
+//	self.connection.Who(msg.channel);
     }
-    this.MSG = function(channelName, message, who)
+    this[2] = function(msg) //ChatMessage
     {
-	self.channels[channelName].writeToChannel(who, message );
+	self.channels[channelName].writeToChannel(msg.who, msg.message );
 
 	if( ! document.hasFocus() )
 	{
@@ -29,7 +30,7 @@ UserInterface.prototype.protocol =  function(self)
 	    document.title = self.titleCache + " (" + self.messages + ")";
 	}
     }
-
+/*
     this.WHO = function(channelName, whoList)
     {
 	var tab = self.channels[channelName];
@@ -47,7 +48,7 @@ UserInterface.prototype.protocol =  function(self)
 	var tab = self.channels[channelName];
 	if( tab instanceof self.Y.ChannelTab )
 	    tab.Part(who);
-    }
+    }*/
 }
 
 UserInterface.prototype.clickSubmit = function() {

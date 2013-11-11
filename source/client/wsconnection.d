@@ -62,7 +62,7 @@ class WSConnection : ConnectionInfo
 
                 socket.send( (scope OutgoingWebSocketMessage os) { 
                     serialize(os, m);
-                });
+                }, FrameOpcode.binary);
             });
         }
     }
