@@ -26,6 +26,7 @@ class ConnectionInfo
     UserInfo user;
     bool[Channel] subscriptions;
     ulong curThread;
+    bool[string] prefs;
 
     this()
     {

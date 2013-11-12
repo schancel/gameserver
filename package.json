@@ -1,8 +1,9 @@
 {
-    "name": "goserver",
-    "description": "Start of a go server using websockets",
+    "name": "sujigo",
+    "description": "Go server using websockets and telnet with IGS support",
     "homepage": "http://example.org",
     "copyright": "Copyright © 2000, Shammah Chancellor",
     "authors": [ "Shammah Chancellor", "Side Effect" ],
     "dependencies": { "vibe-d": "~master", "mysql-native": "~master", "msgpack-d": "~master" },
+    "dflags-dmd": ["-J."]
 }

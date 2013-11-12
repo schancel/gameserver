@@ -8,6 +8,7 @@ import std.array : join;
 import std.string;
 import std.traits;
 import std.exception;
+import std.file;
 
 import vibe.core.core;
 import vibe.core.driver;
@@ -22,6 +23,8 @@ import gameserver.channels;
 import user.userinfo;
 import util.util;
 import client.messages;
+
+const prompt = "1 5";
 /****************************************************************************************
 
  *****************************************************************************************/
@@ -37,12 +40,14 @@ import client.messages;
         mh = new  IGSMessageHandler(this);
         curThread = 1; //TODO: Fix this
 
+        socket.write(import("motd.txt"));
+        socket.write("\r\n");
         socket.write("Login: ");
-        socket.readLine();
+        string username = cast(string)socket.readLine();
         socket.write("Password: ");
-        socket.readLine();
+        string password = cast(string)socket.readLine();
 
-        user = new UserInfo();
+        user = new UserInfo(username, password);
     }
 
     void readLoop()
@@ -51,8 +56,8 @@ import client.messages;
         while(socket.connected)
         {
             try
-            {
-                //send(new ChatMessage("1 5"));
+            {                
+                send(prompt);
                 auto msg = cast(string)socket.readLine();
                 mh.handleInput( msg );
             }
@@ -61,7 +66,7 @@ import client.messages;
                 writeln(ex.msg);
             }
         } 
-        send(new ShutdownMessage());
+        ConnectionInfo.send(new ShutdownMessage());
         active = false;
     }
     
@@ -76,9 +81,13 @@ import client.messages;
                 if(m.supportsIGS)
                 {
                     debug writefln("%d: Sending Message", curThread); 
-                    socket.write(m.toIGSString());
+                    m.writeIGS(socket);
                     socket.write("\r\n");
                 }
+            },
+            (string m) {
+                socket.write(m);
+                socket.write("\r\n");
             });
         }
     }
@@ -88,16 +97,23 @@ import client.messages;
         writeTask = runTask(&writeLoop);
         readTask = runTask(&readLoop);
 
+        new JoinMessage("Earth").handleMessage(this);
+
         readTask.join();
         active = false;
+    }
+
+    void send( string m )
+    {
+        writeTask.send(m);
     }
 }
 
 class IGSMessageHandler
 {
-    private ConnectionInfo ci;
+    private IGSConnection ci;
     
-    this(ConnectionInfo _ci)
+    this(IGSConnection _ci)
     {
         ci = _ci;
     }
@@ -129,7 +145,8 @@ class IGSMessageHandler
                 }
             }
             default:
-                enforce(false, "Unsupported command: " ~ cmd);
+                ci.send("5 "~ cmd~": Unknown command.");
+                enforce(false, "Unsupported command: " ~ cmd ~ " " ~ msg);
                 break;
         }
     end:
@@ -150,13 +167,48 @@ class IGSMessageHandler
         new NickMessage(newName).handleMessage(ci);
     }
 
-    void cmdMsg(string channel, string message)
+    void cmdShout(string message)
     {
-        new ChatMessage(channel,message).handleMessage(ci);
+        new ChatMessage("Earth", message).handleMessage(ci);
+    }
+
+    void cmdTell(string who, string message)
+    {
+        new PrivateMessage(who, message).handleMessage(ci);
     }
 
     void cmdWho(string channel)
     {
-        new WhoMessage(channel).handleMessage(ci);
+        new WhoMessage(channel == "" ? "Earth" : channel).handleMessage(ci);
+    }
+
+    void cmdGames()
+    {
+        ci.send("7 [##]  white name [ rk ]      black name [ rk ] (Move size H Komi BY FR) (###)");
+    }
+
+    //Are you there?
+    void cmdAYT()
+    {
+        ci.send("9 yes");
+    }
+
+    void cmdToggle(string variable, string status)
+    {
+        bool val = ci.prefs.get(variable, false);
+        switch(status)
+        {
+            case "on":
+                val = true;
+                break;
+            case "off":
+                val = false;
+                break;
+            default:
+                val = !val;
+        }
+        ci.prefs[variable] = val;
+
+        ci.send("9 Set "~variable ~" to be " ~ to!string(val) ~".");
     }
 }

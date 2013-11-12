@@ -83,7 +83,7 @@ class Message
 {
     void handleMessage(ConnectionInfo ci ) { assert(false, "Not implemented");   }
     bool supportsIGS() { return false; }
-    string toIGSString() { assert(false, "Not implemented");    }
+    void writeIGS(OutputStream st) { assert(false, "Not implemented");    }
     ubyte opCode() const { assert(false, "Not implemented");    } 
 }
 
@@ -168,6 +168,7 @@ class PartMessage : Message
         
         debug writefln("%s: Parted channel %s", who, channel);
         unsubscribeToChannel( ci, channel );
+        sendToChannel(channel, this);
     }
     
     mixin client.messages.MessageMixin!("channel", "who");
@@ -187,7 +188,7 @@ class WhoMessage : Message
 
     override void handleMessage(ConnectionInfo ci)
     {
-        ("%s: Requested users of channel %s", ci.user.Username, channel);
+        debug writefln("%s: Requested users of channel %s", ci.user.Username, channel);
         new WhoListMessage(channel).handleMessage(ci);
     }
 
@@ -214,6 +215,36 @@ class WhoListMessage : Message
 
         ci.send(this);
     }
+
+    override bool supportsIGS() { return true; };
+    override void writeIGS(OutputStream st)
+    {
+        int line = 0;
+        st.put("27  Info       Name       Idle   Rank |  Info       Name       Idle   Rank");
+        foreach(i, who; whoList)
+        {
+            if( i % 2 == 1)
+                st.put("  |");
+            else 
+                st.put("\r\n27 ");
+            st.put("    --   -- " ~ who ~ "    0s     NR");
+        }
+        st.flush();
+    }
+
+    /*
+27  Info       Name       Idle   Rank |  Info       Name       Idle   Rank
+27  QX --   -- isfadm02   27s     2k  |   X --   -- zz0008      1m     NR 
+27   X256   -- guest4389   3m     NR  |   X --   -- AutoDone   35s     2k 
+27  QX --   -- livegw8     0s     NR  |  QX --   -- livegw7    58s     NR 
+27  QX --   -- livegw9     1m     NR  |  QX --   -- livegw10   56s     NR 
+27  QX --   -- livegw13   36s     NR  |  SX --   -- zz0004      3s     NR 
+27  QX --   -- livegw6     5s     NR  |  QX --   -- livegw5     5s     NR 
+27  QX --   -- livegw12   44s     NR  |  QX --   -- livegw11    1m     NR 
+27  Q  --   -- guest6427   3m     NR  |  QX --   -- haras      48s     3k*
+27  Q  --   -- guest9823   1m     NR  |  Q  --   -- guest7670   3s     NR 
+27  QX --   -- livegw4    31s     NR  |   X --   -- crocblanc   1m     7k*
+*/
 
     mixin client.messages.MessageMixin!("channel", "whoList");
 }
@@ -242,10 +273,60 @@ class ChatMessage : Message
         sendToChannel(channel, this);
     }
 
+    override bool supportsIGS() { return true; };
+    override void writeIGS(OutputStream st)
+    {
+        st.put( "9 !");
+        st.put(who);
+        st.put("!: <");
+        st.put(channel );
+        st.put("> " );
+        st.put(message);
+        st.flush();
+
+    }
+    
     mixin client.messages.MessageMixin!("channel", "message", "who");
 }
 
+//Private Message Format:24 *eluusive*: test
 
+@OpCoder(51)
+class PrivateMessage : Message
+{
+    string target;
+    string who;
+    string message;
+    
+    this() pure {}
+    
+    this(string target, string msg, string who = null ) pure
+    {
+        this.who = who;
+        this.message = msg;
+        this.target = target;
+    }
+    
+    override void handleMessage(ConnectionInfo ci)
+    {
+        who = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
+        
+        debug writefln("PM <%s> --> <%s> : %s", target, who, message );
+        //sendToUser(target, this);
+    }
+    
+    override bool supportsIGS() { return true; };
+    override void writeIGS(OutputStream st)
+    {
+        st.put( "24 *");
+        st.put(who);
+        st.put("* ");
+        st.put(message);
+        st.flush();
+    }
+    
+    mixin client.messages.MessageMixin!("target", "message", "who");
+}
 
 //Begin serialization code
 
@@ -255,7 +336,7 @@ alias hack(alias t) = t; //Hack to be able to store __traits stuff in a tuple
 ///This function serializes messages to a Vibe-D OutputStream with the first item being the opCode for the message type.
 void serialize(T)(OutputStream st, inout(T) msg) if ( is(T  == Message) )
 {
-    st.write([msg.opCode]); //TODO: Fix this so it doesn't allocate
+    st.put(msg.opCode); 
     switch( msg.opCode ){
         foreach( ele; __traits(allMembers, client.messages))
         {
@@ -277,7 +358,7 @@ void serialize(T)(OutputStream st, inout(T) msg) if ( is(T  == Message) )
 void serialize(T)(OutputStream st, inout(T) msg) if ( is(T : Message) && !is(T == Message) )
 {
     ubyte[] ret;
-    st.write([msg.opCode]);
+    st.put(msg.opCode); 
     st.write(msgpack.pack(msg));
 }
 

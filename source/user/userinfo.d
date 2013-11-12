@@ -23,7 +23,7 @@ class UserInfo
     private Rank rating;
     private RelationTypes[string] relations;
 
-    this( string username = "AnonymousCoward") pure 
+    this( string username = "AnonymousCoward", string password=null) pure 
     {
         this.Username = username;
     }

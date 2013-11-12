@@ -14,7 +14,7 @@ UserInterface.prototype.protocol =  function(self)
 {
     this[OpCodes.JoinMessage] = function(channel, who)
     {
-        if( self.connection.name = who) {
+        if( self.connection.name == who) {
 	    var tab = new self.Y.ChannelTab({channelName:channel });
 	    self.channels[channel] = tab;
 	    self.tabview.add( tab , 0 ); 
