@@ -66,7 +66,7 @@ class WSConnection : ConnectionInfo
                 auto m = cast(Message)m_; //Remove shared.  
                 //Could use lock() but that would block other threads from reading.  Nobody should be mutating the message anyways.
 
-                debug writefln("%d: Sending Message", curThread); 
+                debug writefln("%s: Sending Message", user.Username); 
 
                 socket.send( (scope OutgoingWebSocketMessage os) { 
                     serialize(os, m);

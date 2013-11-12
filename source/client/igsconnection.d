@@ -142,27 +142,21 @@ class IGSMessageHandler
     
     void cmdPart(string channel)
     {
-        writefln("%s: Parted channel %s", ci.user.Username,channel);
-        unsubscribeToChannel( ci, channel );
+        new PartMessage(channel).handleMessage(ci);
     }
 
     void cmdNick(string newName)
     {
-        writefln("%s: Changed name to %s ", ci.user.Username, newName);
-        ci.user.Username = newName;
+        new NickMessage(newName).handleMessage(ci);
     }
-    
+
     void cmdMsg(string channel, string message)
     {
-        writefln("%s: Sent message to #%s: %s", ci.user.Username, channel, message);
-        sendToChannel(channel, new OutgoingMessage(ci.user.Username, channel, message));
+        new ChatMessage(channel,message).handleMessage(ci);
     }
 
     void cmdWho(string channel)
     {
-        writefln("%s: WHO #%s", ci.user.Username, channel);
-        string[] who;
-        foreach(curCi; Channel.getChannel(channel).subscriptions.byKey())
-            who ~= curCi.user.Username;
+        new WhoMessage(channel).handleMessage(ci);
     }
 }

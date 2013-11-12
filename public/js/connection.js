@@ -2,8 +2,8 @@ ServerConnection.prototype.onOpen = function onOpen(self)
 {
     return function(evt)
     {
-	var name = prompt("Enter a nickname");
-	//self.Nick(name);
+	self.name = prompt("Enter a nickname");
+	self.Nick(self.name);
 
 	self.Join("Earth");
 	self.JoinLocal();

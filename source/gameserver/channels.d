@@ -24,17 +24,20 @@ class Channel
 
     static Channel getChannel(string channelName)
     {
-        if( auto p = channelName in Channel.channels )  
+        synchronized(typeid(typeof(this))) 
         {
-            return (*p);
-        } 
-        else
-        {
-            return new Channel(channelName); //Channel adds itself to the list of channels.
+            if( auto p = channelName.toUpper() in Channel.channels )  
+            {
+                return (*p);
+            } 
+            else
+            {
+                return new Channel(channelName.toUpper() ); //Channel adds itself to the list of channels.
+            }
         }
     }
     
-    this(string p_name)
+    private this(string p_name)
     {
         active = true;
         name = p_name;
@@ -79,16 +82,15 @@ class Channel
 
 void subscribeToChannel(ConnectionInfo ci, string channelName)
 {
-    Channel chan = Channel.getChannel(channelName.toUpper());
+    Channel chan = Channel.getChannel(channelName);
 
     chan.subscribe(ci);
     ci.subscribe(chan);
-    chan.send(new JoinedMessage(channelName, ci.user.Username));
 }
 
 void unsubscribeToChannel(ConnectionInfo conn, string channelName)
 {
-    Channel chan = Channel.getChannel(channelName.toUpper());
+    Channel chan = Channel.getChannel(channelName);
 
     chan.unsubscribe(conn);
     conn.unsubscribe(chan);

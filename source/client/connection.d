@@ -53,10 +53,16 @@ class ConnectionInfo
     }
 
     void subscribe(Channel chan) {
-        subscriptions[chan] = true;
+        synchronized (this)
+        {
+            subscriptions[chan] = true;
+        }
     };
 
     void unsubscribe(Channel chan) {
-        subscriptions.remove(chan);
+        synchronized (this)
+        {
+            subscriptions.remove(chan);
+        }
     };
 }
