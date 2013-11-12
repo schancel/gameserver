@@ -115,7 +115,7 @@ class NickMessage : Message
     {
         oldName = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
         
-        writefln("%s: Changed name to %s ", ci.user.Username, newName);
+        debug writefln("%s: Changed name to %s ", ci.user.Username, newName);
         ci.user.Username = newName;
     }
     
@@ -140,7 +140,7 @@ class JoinMessage : Message
     {
         who = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
 
-        writefln("%s: Joined channel %s", who, channel);
+        debug writefln("%s: Joined channel %s", who, channel);
         subscribeToChannel( ci, channel );
         sendToChannel(channel, this);
     }
@@ -166,7 +166,7 @@ class PartMessage : Message
     {
         who = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
         
-        writefln("%s: Parted channel %s", who, channel);
+        debug writefln("%s: Parted channel %s", who, channel);
         unsubscribeToChannel( ci, channel );
     }
     
@@ -187,7 +187,7 @@ class WhoMessage : Message
 
     override void handleMessage(ConnectionInfo ci)
     {
-        writefln("%s: Requested users of channel %s", ci.user.Username, channel);
+        ("%s: Requested users of channel %s", ci.user.Username, channel);
         new WhoListMessage(channel).handleMessage(ci);
     }
 
@@ -238,7 +238,7 @@ class ChatMessage : Message
     {
         who = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
         
-        writefln("%s <%s>: %s", channel, who, message );
+        debug writefln("%s <%s>: %s", channel, who, message );
         sendToChannel(channel, this);
     }
 
