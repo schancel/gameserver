@@ -28,7 +28,7 @@ const prompt = "1 5";
 /****************************************************************************************
 
  *****************************************************************************************/
- class IGSConnection : ConnectionInfo
+class IGSConnection : ConnectionInfo
 { 
     private TCPConnection socket;
     private IGSMessageHandler mh;
@@ -53,21 +53,20 @@ const prompt = "1 5";
     void readLoop()
     {
         debug writefln("%d: IGS ReadTask Started", curThread);
-        while(socket.connected)
-        {
-            try
-            {                
+        try
+        { 
+            while(socket.connected && active)
+            {
+                
                 send(prompt);
                 auto msg = cast(string)socket.readLine();
                 mh.handleInput( msg );
             }
-            catch( Exception ex )
-            {
-                writeln(ex.msg);
-            }
-        } 
-        ConnectionInfo.send(new ShutdownMessage());
-        active = false;
+
+        } finally {
+            ConnectionInfo.send(new ShutdownMessage());
+            active = false;
+        }
     }
     
     private void writeLoop()
@@ -77,14 +76,13 @@ const prompt = "1 5";
         {
             receive( (shared Message m_) {
                 auto m = cast(Message)m_; //Remove shared
-
                 if(m.supportsIGS)
                 {
                     debug writefln("%d: Sending Message", curThread); 
                     m.writeIGS(socket);
                     socket.write("\r\n");
                 }
-            },
+            }, //Send raw messages to the client.
             (string m) {
                 socket.write(m);
                 socket.write("\r\n");

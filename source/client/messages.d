@@ -78,9 +78,10 @@ mixin template MessageMixin(Args...)
 }
 
 
-//Base message class.   This class should not be serialized or de-serialized.
+///Base message class.   This class should not be serialized or de-serialized.
 class Message
 {
+    this() pure {}
     void handleMessage(ConnectionInfo ci ) { assert(false, "Not implemented");   }
     bool supportsIGS() { return false; }
     void writeIGS(OutputStream st) { assert(false, "Not implemented");    }
@@ -96,11 +97,12 @@ class ShutdownMessage : Message
     mixin client.messages.MessageMixin;
 }
 
+///Handles allowing user to change their name.   This needs to be changed to an authentication 
+///message in the future.
 @OpCoder(5)
 class NickMessage : Message
 {
     string oldName;
-
     string newName;
     
     this() pure {}
@@ -217,6 +219,21 @@ class WhoListMessage : Message
     }
 
     override bool supportsIGS() { return true; };
+
+   /***  Output should look like this for other clients to parse it.
+27  Info       Name       Idle   Rank |  Info       Name       Idle   Rank
+27  QX --   -- isfadm02   27s     2k  |   X --   -- zz0008      1m     NR 
+27   X256   -- guest4389   3m     NR  |   X --   -- AutoDone   35s     2k 
+27  QX --   -- livegw8     0s     NR  |  QX --   -- livegw7    58s     NR 
+27  QX --   -- livegw9     1m     NR  |  QX --   -- livegw10   56s     NR 
+27  QX --   -- livegw13   36s     NR  |  SX --   -- zz0004      3s     NR 
+27  QX --   -- livegw6     5s     NR  |  QX --   -- livegw5     5s     NR 
+27  QX --   -- livegw12   44s     NR  |  QX --   -- livegw11    1m     NR 
+27  Q  --   -- guest6427   3m     NR  |  QX --   -- haras      48s     3k*
+27  Q  --   -- guest9823   1m     NR  |  Q  --   -- guest7670   3s     NR 
+27  QX --   -- livegw4    31s     NR  |   X --   -- crocblanc   1m     7k*
+*/
+
     override void writeIGS(OutputStream st)
     {
         int line = 0;
@@ -232,20 +249,7 @@ class WhoListMessage : Message
         st.flush();
     }
 
-    /*
-27  Info       Name       Idle   Rank |  Info       Name       Idle   Rank
-27  QX --   -- isfadm02   27s     2k  |   X --   -- zz0008      1m     NR 
-27   X256   -- guest4389   3m     NR  |   X --   -- AutoDone   35s     2k 
-27  QX --   -- livegw8     0s     NR  |  QX --   -- livegw7    58s     NR 
-27  QX --   -- livegw9     1m     NR  |  QX --   -- livegw10   56s     NR 
-27  QX --   -- livegw13   36s     NR  |  SX --   -- zz0004      3s     NR 
-27  QX --   -- livegw6     5s     NR  |  QX --   -- livegw5     5s     NR 
-27  QX --   -- livegw12   44s     NR  |  QX --   -- livegw11    1m     NR 
-27  Q  --   -- guest6427   3m     NR  |  QX --   -- haras      48s     3k*
-27  Q  --   -- guest9823   1m     NR  |  Q  --   -- guest7670   3s     NR 
-27  QX --   -- livegw4    31s     NR  |   X --   -- crocblanc   1m     7k*
-*/
-
+ 
     mixin client.messages.MessageMixin!("channel", "whoList");
 }
 

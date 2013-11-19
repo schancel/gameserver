@@ -19,17 +19,18 @@ import client.igsconnection;
 import client.wsconnection;
 import client.messages;
 
-void initiateWebsocket(HTTPServerRequest req,
-                       HTTPServerResponse res)
-{
-    auto wsd = handleWebSockets( function(WebSocket ws) {
-        scope auto ci = new WSConnection(ws);
-        
-        ci.spawn();
-    } );
-    
-    wsd(req,res);
-}
+    void initiateWebsocket(HTTPServerRequest req,
+                           HTTPServerResponse res)
+    {
+        auto wsd = handleWebSockets( delegate(WebSocket ws) {
+
+            scope auto ci = new WSConnection(ws);
+            
+            ci.spawn();
+        } );
+ 
+        wsd(req,res);
+    }
 
 void initiateTelnet(TCPConnection conn)
 {
@@ -48,7 +49,7 @@ static this()
             .get("/js/rpc_bindings.js", (req, res) { immutable string jsBindings = JavascriptBindings(); res.writeBody(jsBindings); })
             .get("/", staticRedirect("/index.html"));
 
-    setLogLevel(LogLevel.diagnostic);
+    //setLogLevel(LogLevel.verbose4);
     setLogFile("log.txt");
 
     auto settings = new HTTPServerSettings;

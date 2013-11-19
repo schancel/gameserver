@@ -36,10 +36,11 @@ class WSConnection : ConnectionInfo
 
     void readLoop()
     {
-        while(socket.connected)
+        try
         {
-            try
+            while(socket.connected)
             {
+                
                 import std.stdio;
                 auto msgData = socket.receiveBinary();
                 auto msg = deserialize(msgData);
@@ -48,13 +49,10 @@ class WSConnection : ConnectionInfo
                     msg.handleMessage(this);
                 }
             }
-            catch( Exception ex )
-            {
-                debug writeln(ex.msg);
-            }
-        } 
-        send(new ShutdownMessage);
-        active = false;
+        } finally {
+            active = false;
+            send(new ShutdownMessage);
+        }
     }
 
     private void writeLoop()
@@ -67,10 +65,11 @@ class WSConnection : ConnectionInfo
                 //Could use lock() but that would block other threads from reading.  Nobody should be mutating the message anyways.
 
                 debug writefln("%s: Sending Message", user.Username); 
-
                 socket.send( (scope OutgoingWebSocketMessage os) { 
                     serialize(os, m);
                 }, FrameOpcode.binary);
+                
+                
             });
         }
     }

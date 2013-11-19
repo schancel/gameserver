@@ -80,10 +80,17 @@ class Channel
     };
 }
 
+class GoChannel : Channel
+{
+    this(string gamename)
+    {
+        super(gamename);
+    }
+}
+
 void subscribeToChannel(ConnectionInfo ci, string channelName)
 {
     Channel chan = Channel.getChannel(channelName);
-
     chan.subscribe(ci);
     ci.subscribe(chan);
 }

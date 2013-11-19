@@ -4,6 +4,7 @@
     "homepage": "http://example.org",
     "copyright": "Copyright © 2000, Shammah Chancellor",
     "authors": [ "Shammah Chancellor", "Side Effect" ],
-    "dependencies": { "vibe-d": "~master", "mysql-native": "~master", "msgpack-d": "~master" },
-    "dflags-dmd": ["-J."]
+    "dependencies": { "vibe-d": "~master", "mysql-native": "~master", "msgpack-d": "~master"},
+    "dflags-dmd": ["-J."],
+    "-ddoxFilterArgs": ["--min-protection=Public", "--ex", "deimos.", "--ex", "vibe.core.drivers.", "--ex", "etc.", "--ex", "std.", "--ex", "core.", "--ex", "vibe."]
 }
