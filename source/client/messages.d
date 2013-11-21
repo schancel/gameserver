@@ -88,41 +88,62 @@ class Message
     ubyte opCode() const { assert(false, "Not implemented");    } 
 }
 
-///Sent this message to initiate a close of the connection.
+///Send this message to initiate a close of the connection.
+///
 @OpCoder(1)
 class ShutdownMessage : Message
 {
     this() pure {}
 
-    mixin client.messages.MessageMixin;
+    mixin client.messages.MessageMixin!();
 }
 
-///Handles allowing user to change their name.   This needs to be changed to an authentication 
-///message in the future.
+///Handles allowing user to authenticate.  They are a guest until they do this.
 @OpCoder(5)
-class NickMessage : Message
+class AuthMessage : Message
 {
-    string oldName;
-    string newName;
+    string username;
+    string password;
     
     this() pure {}
     
-    this(string newName, string oldName = "") pure 
+    this(string username, string password = "") pure 
     {
-        this.newName = newName;
-        this.oldName = oldName;
+        this.username = username;
+        this.password = password;
     }
     
     override void handleMessage(ConnectionInfo ci)
     {
-        oldName = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
-        
-        debug writefln("%s: Changed name to %s ", ci.user.Username, newName);
-        ci.user.Username = newName;
+        auto oldName = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
+        ci.user = new UserInfo(username);
+
+        debug writefln("%s: Authenticated as %s", oldName, ci.user.Username);
+
+        ci.send(new AuthResponseMessage(ci.user.Username));
     }
     
-    mixin client.messages.MessageMixin!("newName", "oldName");
+    mixin client.messages.MessageMixin!("username", "password");
 }
+
+
+///Responds to the authentication message with their new authenticated username.
+///May not be what was requested in the case of an authentication failure.
+@OpCoder(6)
+class AuthResponseMessage : Message
+{
+    string username;
+
+    this() pure {}
+
+    this(string username) pure
+    {
+        this.username = username;
+    }
+
+    mixin client.messages.MessageMixin!("username");
+}
+
 
 @OpCoder(40)
 class JoinMessage : Message
@@ -163,7 +184,7 @@ class PartMessage : Message
         this.channel = channel;
         this.who = who;
     }
- 
+    
     override void handleMessage(ConnectionInfo ci)
     {
         who = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
@@ -220,19 +241,19 @@ class WhoListMessage : Message
 
     override bool supportsIGS() { return true; };
 
-   /***  Output should look like this for other clients to parse it.
-27  Info       Name       Idle   Rank |  Info       Name       Idle   Rank
-27  QX --   -- isfadm02   27s     2k  |   X --   -- zz0008      1m     NR 
-27   X256   -- guest4389   3m     NR  |   X --   -- AutoDone   35s     2k 
-27  QX --   -- livegw8     0s     NR  |  QX --   -- livegw7    58s     NR 
-27  QX --   -- livegw9     1m     NR  |  QX --   -- livegw10   56s     NR 
-27  QX --   -- livegw13   36s     NR  |  SX --   -- zz0004      3s     NR 
-27  QX --   -- livegw6     5s     NR  |  QX --   -- livegw5     5s     NR 
-27  QX --   -- livegw12   44s     NR  |  QX --   -- livegw11    1m     NR 
-27  Q  --   -- guest6427   3m     NR  |  QX --   -- haras      48s     3k*
-27  Q  --   -- guest9823   1m     NR  |  Q  --   -- guest7670   3s     NR 
-27  QX --   -- livegw4    31s     NR  |   X --   -- crocblanc   1m     7k*
-*/
+    /***  Output should look like this for other clients to parse it.
+     27  Info       Name       Idle   Rank |  Info       Name       Idle   Rank
+     27  QX --   -- isfadm02   27s     2k  |   X --   -- zz0008      1m     NR 
+     27   X256   -- guest4389   3m     NR  |   X --   -- AutoDone   35s     2k 
+     27  QX --   -- livegw8     0s     NR  |  QX --   -- livegw7    58s     NR 
+     27  QX --   -- livegw9     1m     NR  |  QX --   -- livegw10   56s     NR 
+     27  QX --   -- livegw13   36s     NR  |  SX --   -- zz0004      3s     NR 
+     27  QX --   -- livegw6     5s     NR  |  QX --   -- livegw5     5s     NR 
+     27  QX --   -- livegw12   44s     NR  |  QX --   -- livegw11    1m     NR 
+     27  Q  --   -- guest6427   3m     NR  |  QX --   -- haras      48s     3k*
+     27  Q  --   -- guest9823   1m     NR  |  Q  --   -- guest7670   3s     NR 
+     27  QX --   -- livegw4    31s     NR  |   X --   -- crocblanc   1m     7k*
+     */
 
     override void writeIGS(OutputStream st)
     {
@@ -249,7 +270,7 @@ class WhoListMessage : Message
         st.flush();
     }
 
- 
+    
     mixin client.messages.MessageMixin!("channel", "whoList");
 }
 

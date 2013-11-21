@@ -54,7 +54,7 @@ static this()
 
     auto settings = new HTTPServerSettings;
     settings.port = 8080;
-    settings.bindAddresses = ["::"];
+    //settings.bindAddresses = ["::"];
     //settings.sslContext = new SSLContext( "server.crt", "server.key"); //Support for SSL certificates.
 
     //Lets support IGS also.

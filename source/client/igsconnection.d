@@ -160,9 +160,9 @@ class IGSMessageHandler
         new PartMessage(channel).handleMessage(ci);
     }
 
-    void cmdNick(string newName)
+    void cmdNick(string newName, string password)
     {
-        new NickMessage(newName).handleMessage(ci);
+        new AuthMessage(newName, password).handleMessage(ci);
     }
 
     void cmdShout(string message)
