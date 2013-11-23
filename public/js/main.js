@@ -55,14 +55,6 @@ UserInterface.prototype.protocol =  function(self)
     {
 
     }
-
-    
-/*
-    this.PARTED = function(channelName, who) {
-	var tab = self.channels[channelName];
-	if( tab instanceof self.Y.ChannelTab )
-	    tab.Part(who);
-    }*/
 }
 
 UserInterface.prototype.clickSubmit = function() {

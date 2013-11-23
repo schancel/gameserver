@@ -23,8 +23,7 @@ import client.messages;
                            HTTPServerResponse res)
     {
         auto wsd = handleWebSockets( delegate(WebSocket ws) {
-
-            scope auto ci = new WSConnection(ws);
+            scope auto ci = new WSConnection(ws, req.headers.get("Sec-WebSocket-Key"));
             
             ci.spawn();
         } );
@@ -46,7 +45,7 @@ static this()
     router
         .get("*", serveStaticFiles("./public/"))
             .get("/websocket", &initiateWebsocket) 
-            .get("/js/rpc_bindings.js", (req, res) { immutable string jsBindings = JavascriptBindings(); res.writeBody(jsBindings); })
+            .get("/js/rpc_bindings.js", (req, res) { static immutable string jsBindings = JavascriptBindings(); res.writeBody(jsBindings); })
             .get("/", staticRedirect("/index.html"));
 
     //setLogLevel(LogLevel.verbose4);
@@ -54,7 +53,6 @@ static this()
 
     auto settings = new HTTPServerSettings;
     settings.port = 8080;
-    //settings.bindAddresses = ["::"];
     //settings.sslContext = new SSLContext( "server.crt", "server.key"); //Support for SSL certificates.
 
     //Lets support IGS also.

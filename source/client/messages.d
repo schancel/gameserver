@@ -1,7 +1,7 @@
 module client.messages;
 import client.connection;
 
-import std.typecons;
+import std.typetuple;
 import std.stdio;
 import std.conv;
 
@@ -190,8 +190,8 @@ class PartMessage : Message
         who = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
         
         debug writefln("%s: Parted channel %s", who, channel);
-        unsubscribeToChannel( ci, channel );
         sendToChannel(channel, this);
+        unsubscribeToChannel( ci, channel );
     }
     
     mixin client.messages.MessageMixin!("channel", "who");
@@ -355,24 +355,16 @@ class PrivateMessage : Message
 
 //Begin serialization code
 
-alias hack(alias t) = t; //Hack to be able to store __traits stuff in a tuple
-
-
 ///This function serializes messages to a Vibe-D OutputStream with the first item being the opCode for the message type.
-void serialize(T)(OutputStream st, inout(T) msg) if ( is(T  == Message) )
+void serialize(T)(OutputStream st, inout(T) msg) if ( is(T == Message) )
 {
     st.put(msg.opCode); 
     switch( msg.opCode ){
-        foreach( ele; __traits(allMembers, client.messages))
-        {
-            alias eleMen = hack!(__traits(getMember, client.messages, ele));
-            static if ( is( eleMen : Message ) && !is( eleMen == Message) )
-            {
-                case eleMen.opCodeStatic:
-                eleMen temp = cast(eleMen)msg;
-                st.write(msgpack.pack(temp));
-                break;
-            }
+        foreach( messageType; AllMessages!()){
+            case messageType.opCodeStatic:
+            messageType temp = cast(messageType)msg;
+            st.write(msgpack.pack(temp));
+            break;
         }
         default:
             break;
@@ -396,17 +388,11 @@ Message deserialize(ubyte[] msg) {
     msg = msg[1..$];
 
     switch( code ){
-        foreach( ele; __traits(allMembers, client.messages))
-        {
-            alias eleMen = hack!(__traits(getMember, client.messages, ele));
-
-            static if ( is( eleMen : Message ) && !is( eleMen == Message) )
-            {
-                case eleMen.opCodeStatic:
-                eleMen temp = new eleMen();
-                msgpack.unpack(msg, temp);
-                return temp;
-            }
+        foreach( messageType; AllMessages!()){
+            case messageType.opCodeStatic:
+            messageType temp = new messageType();
+            msgpack.unpack(msg, temp);
+            return temp;
         }
         default:
             enforce(false, "Invalid opcode: " ~ to!string(code));
@@ -421,16 +407,10 @@ Message deserialize(ubyte[] msg) {
 string GenEnum(string Name) {
     bool needsComma = false;
     string code = "enum " ~ Name ~ " {";
-    foreach( ele; __traits(allMembers, client.messages))
-    {
-        alias eleMen = hack!(__traits(getMember, client.messages, ele));
-
-        static if ( is( eleMen : Message ) && !is( eleMen == Message) )
-        {
-            import std.conv;
-            code ~= (needsComma ? "," : "") ~ ele ~ "=" ~ to!string(eleMen.opCodeStatic) ;
-            needsComma = true;
-        }
+    foreach( messageType; AllMessages!()){
+        import std.conv;
+        code ~= (needsComma ? "," : "") ~ __traits(identifier,messageType) ~ "=" ~ to!string(messageType.opCodeStatic) ;
+        needsComma = true;
     }
     code ~= " }";
     return code;
@@ -442,18 +422,51 @@ mixin(GenEnum("OpCode"));
 ///This should be bound to a URL with the vibe-d router.
 string JavascriptBindings() {
     string code = "OpCodes = {};";
-    foreach( ele; __traits(allMembers, client.messages))
+    foreach( messageType; AllMessages!())
     {
-        alias eleMen = hack!(__traits(getMember, client.messages, ele));
-        
-        static if ( is( eleMen : Message ) && !is( eleMen == Message) )
-        {
-            import std.conv;
-            code ~= "OpCodes." ~ ele ~ "=" ~ to!string(eleMen.opCodeStatic) ~";\n" ;
-            code ~= eleMen.jsBinding();
-        }
+        import std.conv;
+        code ~= "OpCodes." ~ __traits(identifier,messageType) ~ "=" ~ to!string(messageType.opCodeStatic) ~";\n" ;
+        code ~= messageType.jsBinding();
     }
+
     return code;
 }
 
+
+alias hack(alias T) = T; //Hack to be able to store __traits stuff in a tuple
+
+
+///Template to generate a TypeTuple of all message types;
+template AllMessages()
+{
+    alias AllMessages = MessagePackage!(client.messages);
+}
+
+template MessagePackage(alias packageName)
+{
+    alias Members = TypeTuple!(__traits(allMembers, packageName));
+    alias MessagePackage = PackageMessages!(packageName, Members)[0..$-1]; //Strip off the Last Item.
+}
+
+template PackageMessages(alias packageName, Members...)
+{
+    //pragma(msg, Members);
+    alias member = hack!(__traits(getMember, packageName, Members[0]));
+    static if ( is( member : Message ) && !is( member == Message))
+    {
+        static if( Members.length == 1)
+        {
+            alias PackageMessages = hack!(member);
+        } else {
+            alias PackageMessages = TypeTuple!(hack!(member), PackageMessages!(packageName, Members[1..$]));
+        }
+    } else {
+        static if( Members.length == 1)
+        {
+            alias PackageMessages = void;
+        } else {
+            alias PackageMessages = TypeTuple!(PackageMessages!(packageName, Members[1..$]));
+        }
+    }
+}
 

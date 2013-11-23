@@ -3,7 +3,7 @@ ServerConnection.prototype.onOpen = function onOpen(self)
     return function(evt)
     {
 	self.name = prompt("Enter a nickname");
-	self.Nick(self.name);
+	self.Auth(self.name);
 
 	self.Join("Earth");
 	self.JoinLocal();

@@ -25,12 +25,15 @@ import user.userinfo;
 class WSConnection : ConnectionInfo
 { 
     private WebSocket socket;
+    string SecWebSocketKey;
 
-    this(WebSocket _conn)
+    this(WebSocket _conn, string SecWebSocketKey)
     {
         super();
         socket = _conn;
         user = new UserInfo();
+        this.SecWebSocketKey = SecWebSocketKey;
+        writeln(SecWebSocketKey);
         curThread = socket.toHash();
     }
 
