@@ -9,7 +9,7 @@ import core.time;
 import std.conv;
 import std.string : toUpper;
 
-import client.messages;
+import messages.core;
 import client.connection;
 
 class Channel
@@ -47,9 +47,9 @@ class Channel
                 receive((shared Message m) {
                     if(active)
                         foreach( subscriber; subscriptions.byKey())
-                        {
-                            subscriber.send(cast(Message)m);
-                        }
+                    {
+                        subscriber.send(cast(Message)m);
+                    }
                 });
             }
         });

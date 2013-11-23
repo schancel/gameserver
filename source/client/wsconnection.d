@@ -15,7 +15,9 @@ import vibe.stream.operations;
 import msgpack;  //Msg Pack For messages
 
 import client.connection;
-import client.messages;
+
+import messages;
+
 import gameserver.channels;
 import user.userinfo;
 

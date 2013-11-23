@@ -17,24 +17,25 @@ import vibe.data.json;
 import client.connection;
 import client.igsconnection;
 import client.wsconnection;
-import client.messages;
 
-    void initiateWebsocket(HTTPServerRequest req,
-                           HTTPServerResponse res)
-    {
-        auto wsd = handleWebSockets( delegate(WebSocket ws) {
-            scope auto ci = new WSConnection(ws, req.headers.get("Sec-WebSocket-Key"));
-            
-            ci.spawn();
-        } );
- 
-        wsd(req,res);
-    }
+import messages.core;
+
+void initiateWebsocket(HTTPServerRequest req,
+                       HTTPServerResponse res)
+{
+    auto wsd = handleWebSockets( delegate(WebSocket ws) {
+        scope auto ci = new WSConnection(ws, req.headers.get("Sec-WebSocket-Key"));
+
+        ci.spawn();
+    } );
+
+    wsd(req,res);
+}
 
 void initiateTelnet(TCPConnection conn)
 {
     scope auto ci = new IGSConnection(conn);
-    
+
     ci.spawn();
 }
 

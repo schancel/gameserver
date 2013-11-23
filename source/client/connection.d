@@ -15,7 +15,7 @@ import vibe.core.concurrency;
 import vibe.core.log;
 import vibe.stream.operations;
 
-import client.messages;
+import messages;
 import gameserver.channels;
 import user.userinfo;
 

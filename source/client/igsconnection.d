@@ -22,7 +22,7 @@ import client.connection;
 import gameserver.channels;
 import user.userinfo;
 import util.util;
-import client.messages;
+import messages;
 
 const prompt = "1 5";
 /****************************************************************************************
