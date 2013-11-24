@@ -1,5 +1,4 @@
 module messages.chat;
-import client.connection;
 
 import std.typetuple;
 import std.stdio;
@@ -7,10 +6,10 @@ import std.conv;
 
 import vibe.core.stream;
 
+import client.connection;
 import user.userinfo;
-import gameserver.channels;
+import channels;
 import messages.core;
-
 
 @OpCoder(50)
 class ChatMessage : Message

@@ -1,5 +1,5 @@
 module messages.channel;
-import client.connection;
+
 
 import std.typetuple;
 import std.stdio;
@@ -8,7 +8,10 @@ import std.conv;
 import vibe.core.stream;
 
 import user.userinfo;
-import gameserver.channels;
+
+import channels;
+import client.connection;
+
 import messages.core;
 
 
@@ -100,7 +103,7 @@ class WhoListMessage : Message
 
     override void handleMessage(ConnectionInfo ci)
     {
-        foreach(curCi; Channel.getChannel(channel).subscriptions.byKey())
+        foreach(curCi; getChannel(channel).subscriptions.byKey())
             whoList ~= curCi.user.Username;
 
         ci.send(this);
@@ -136,7 +139,6 @@ class WhoListMessage : Message
         }
         st.flush();
     }
-
     
     mixin messages.MessageMixin!("channel", "whoList");
 }

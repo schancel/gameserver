@@ -1,4 +1,5 @@
 module messages.auth;
+
 import client.connection;
 
 import std.typetuple;
@@ -8,7 +9,7 @@ import std.conv;
 import vibe.core.stream;
 
 import user.userinfo;
-import gameserver.channels;
+import channels;
 
 import messages.core;
 

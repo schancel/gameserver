@@ -1,18 +1,8 @@
 import core.time;
 
-import std.container;
 import std.stdio;
-import std.conv;
-import std.file;
 
 import vibe.d;
-import vibe.core.core;
-import vibe.core.driver;
-import vibe.http.websockets;
-import vibe.stream.ssl;
-import vibe.core.concurrency;
-import vibe.core.log;
-import vibe.data.json;
 
 import client.connection;
 import client.igsconnection;
@@ -20,16 +10,10 @@ import client.wsconnection;
 
 import messages.core;
 
-void initiateWebsocket(HTTPServerRequest req,
-                       HTTPServerResponse res)
-{
-    auto wsd = handleWebSockets( delegate(WebSocket ws) {
-        scope auto ci = new WSConnection(ws, req.headers.get("Sec-WebSocket-Key"));
-
-        ci.spawn();
-    } );
-
-    wsd(req,res);
+void initateWebSocket(WebSocket ws) {
+    scope auto ci = new WSConnection(ws);
+    
+    ci.spawn();
 }
 
 void initiateTelnet(TCPConnection conn)
@@ -42,10 +26,9 @@ void initiateTelnet(TCPConnection conn)
 static this() 
 {
     auto router = new URLRouter;
-
     router
         .get("*", serveStaticFiles("./public/"))
-            .get("/websocket", &initiateWebsocket) 
+            .get("/websocket", handleWebSockets( &initateWebSocket ) ) 
             .get("/js/rpc_bindings.js", (req, res) { static immutable string jsBindings = JavascriptBindings(); res.writeBody(jsBindings); })
             .get("/", staticRedirect("/index.html"));
 
@@ -58,7 +41,7 @@ static this()
 
     //Lets support IGS also.
     runTask(() {
-        listenTCP_s(6969, &initiateTelnet, settings.bindAddresses[0]);// This blocks, so we need to spawn another event loop.
+        listenTCP_s(6969, &initiateTelnet);// This blocks, so we need to spawn another event loop.
     });
 
     listenHTTP(settings, router);

@@ -1,47 +1,52 @@
-module gameserver.channels;
+module channels.core;
 
 import vibe.core.core;
 import vibe.core.concurrency;
 
-import std.container;
 import std.stdio;
-import core.time;
-import std.conv;
 import std.string : toUpper;
 
 import messages.core;
 import client.connection;
 
+import std.exception;
+
+private __gshared Channel[string] channels;
+private __gshared Object chanMutex = new Object();
+
+static Channel getChannel(string channelName)
+{
+    synchronized(chanMutex) 
+    {
+        if( auto p = channelName.toUpper() in channels )  
+        {
+            return (*p);
+        } 
+        else
+        {
+            return new Channel(channelName.toUpper() ); //Channel adds itself to the list of channels.
+        }
+    } 
+}
+
 class Channel
 {
-    static Channel[string] channels;
-
     string name;
-    private bool active;
+    private bool active;  //Tell our observer to stop.
     
     private Task observer; //Observes the channel and forwards messages to clients.
     bool[ConnectionInfo] subscriptions;
 
-    static Channel getChannel(string channelName)
-    {
-        synchronized(typeid(typeof(this))) 
-        {
-            if( auto p = channelName.toUpper() in Channel.channels )  
-            {
-                return (*p);
-            } 
-            else
-            {
-                return new Channel(channelName.toUpper() ); //Channel adds itself to the list of channels.
-            }
-        }
-    }
-    
-    private this(string p_name)
+    protected this(string p_name)
     {
         active = true;
         name = p_name;
-        channels[name] = this;
+
+        synchronized(chanMutex)
+        {
+            channels[name] = this;
+        }
+
         observer = runTask({
             while(active) {
                 receive((shared Message m) {
@@ -57,6 +62,7 @@ class Channel
 
     ~this()
     {
+        observer.terminate();
         active = false;
     }
 
@@ -80,32 +86,35 @@ class Channel
     };
 }
 
-class GoChannel : Channel
-{
-    this(string gamename)
-    {
-        super(gamename);
-    }
-}
-
 void subscribeToChannel(ConnectionInfo ci, string channelName)
 {
-    Channel chan = Channel.getChannel(channelName);
+    Channel chan = getChannel(channelName);
     chan.subscribe(ci);
     ci.subscribe(chan);
 }
 
 void unsubscribeToChannel(ConnectionInfo conn, string channelName)
 {
-    Channel chan = Channel.getChannel(channelName);
+    Channel chan = getChannel(channelName);
 
     chan.unsubscribe(conn);
     conn.unsubscribe(chan);
 }
 
+class NonExistantChannel : Exception {
+    this(string channel)
+    {
+        super("Non existant channel: " ~ channel);
+    }
+}
+
 void sendToChannel( string channelName, Message m)
 {
-    if( Channel* p = channelName.toUpper() in Channel.channels )  {
-        (*p).send(m);
+    synchronized(chanMutex){
+        if( Channel* p = channelName.toUpper() in channels )  {
+            (*p).send(m);
+        } else {
+            throw new NonExistantChannel(channelName);
+        }
     }
 }

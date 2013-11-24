@@ -1,14 +1,11 @@
 module client.igsconnection;
 
-import std.container;
 import std.stdio;
 import core.time;
 import std.conv;
-import std.array : join;
 import std.string;
 import std.traits;
 import std.exception;
-import std.file;
 
 import vibe.core.core;
 import vibe.core.driver;
@@ -19,9 +16,9 @@ import vibe.core.log;
 import vibe.stream.operations;
 
 import client.connection;
-import gameserver.channels;
+import channels;
 import user.userinfo;
-import util.util;
+import util.stringutils;
 import messages;
 
 const prompt = "1 5";
@@ -144,7 +141,6 @@ class IGSMessageHandler
             }
             default:
                 ci.send("5 "~ cmd~": Unknown command.");
-                enforce(false, "Unsupported command: " ~ cmd ~ " " ~ msg);
                 break;
         }
     end:

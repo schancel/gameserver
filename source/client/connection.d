@@ -16,7 +16,7 @@ import vibe.core.log;
 import vibe.stream.operations;
 
 import messages;
-import gameserver.channels;
+import channels;
 import user.userinfo;
 
 class ConnectionInfo

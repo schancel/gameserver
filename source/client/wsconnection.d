@@ -18,7 +18,7 @@ import client.connection;
 
 import messages;
 
-import gameserver.channels;
+import channels;
 import user.userinfo;
 
 /****************************************************************************************
@@ -27,15 +27,12 @@ import user.userinfo;
 class WSConnection : ConnectionInfo
 { 
     private WebSocket socket;
-    string SecWebSocketKey;
 
-    this(WebSocket _conn, string SecWebSocketKey)
+    this(WebSocket _conn)
     {
         super();
         socket = _conn;
         user = new UserInfo();
-        this.SecWebSocketKey = SecWebSocketKey;
-        writeln(SecWebSocketKey);
         curThread = socket.toHash();
     }
 

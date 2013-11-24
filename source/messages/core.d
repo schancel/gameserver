@@ -1,15 +1,15 @@
 module messages.core;
 
-import client.connection;
-
 import std.typetuple;
 import std.stdio;
 import std.conv;
+import std.string : startsWith;
 
 import vibe.core.stream;
 
 public import msgpack;
 
+import client.connection;
 import messages.auth;
 import messages.chat;
 import messages.channel;
@@ -98,14 +98,14 @@ void serialize(T)(OutputStream st, inout(T) msg) if ( is(T == Message) )
 {
     st.put(msg.opCode); 
     switch( msg.opCode ){
-        foreach( messageType; AllMessages!()){
+        foreach( messageType; AllMessages){
             case messageType.opCodeStatic:
             messageType temp = cast(messageType)msg;
             st.write(msgpack.pack(temp));
             break;
         }
         default:
-            break;
+            throw new MessagePackException("No registered type for opCode");
     }
 }
 
@@ -126,7 +126,7 @@ Message deserialize(ubyte[] msg) {
     msg = msg[1..$];
 
     switch( code ){
-        foreach( messageType; AllMessages!()){
+        foreach( messageType; AllMessages){
             case messageType.opCodeStatic:
             messageType temp = new messageType();
             msgpack.unpack(msg, temp);
@@ -145,7 +145,7 @@ Message deserialize(ubyte[] msg) {
 string GenEnum(string Name) {
     bool needsComma = false;
     string code = "enum " ~ Name ~ " {";
-    foreach( messageType; AllMessages!()){
+    foreach( messageType; AllMessages){
         import std.conv;
         code ~= (needsComma ? "," : "") ~ __traits(identifier,messageType) ~ "=" ~ to!string(messageType.opCodeStatic) ;
         needsComma = true;
@@ -160,7 +160,7 @@ mixin(GenEnum("OpCode"));
 ///This should be bound to a URL with the vibe-d router.
 string JavascriptBindings() {
     string code = "OpCodes = {};";
-    foreach( messageType; AllMessages!())
+    foreach( messageType; AllMessages)
     {
         import std.conv;
         code ~= "OpCodes." ~ __traits(identifier,messageType) ~ "=" ~ to!string(messageType.opCodeStatic) ~";\n" ;
@@ -171,24 +171,37 @@ string JavascriptBindings() {
 }
 
 
-alias hack(alias T) = T; //Hack to be able to store __traits stuff in a tuple
+alias hack(alias T) = T; //Hack to be able to store __traits stuff in an alias
 
+alias AllMessages = EvaulateMessageModules!( "messages.chat", "messages.auth", "messages.channel" );
 
-///Template to generate a TypeTuple of all message types;
-template AllMessages()
+//Accepts a tuple of strings which should be modulenames for the modules which contain messages.
+template EvaulateMessageModules(Packages...)
 {
-    alias AllMessages = TypeTuple!( MessagePackage!(messages.auth),
-                                    MessagePackage!(messages.chat),
-                                    MessagePackage!(messages.channel));
+    //pragma(msg, Packages[0]);
+    static if(Packages.length == 1)
+    {
+        static if( Packages[0].startsWith("messages"))
+            alias EvaulateMessageModules = TypeTuple!(EvaulateMessageModule!(Packages[0]));
+        else  
+            alias EvaulateMessageModules = TypeTuple!();
+    } else {
+        static if( Packages[0].startsWith("messages"))
+            alias EvaulateMessageModules = TypeTuple!(EvaulateMessageModule!(Packages[0]), EvaulateMessageModules!(Packages[1..$]));
+        else  
+            alias EvaulateMessageModules = TypeTuple!(EvaluatePackages!(Packages[1..$]));
+    }
 }
 
-template MessagePackage(alias packageName)
+//Accepts the name of a package as a string.  Should evaluate to a TypeTuple of all the classes deriving from Message.
+template EvaulateMessageModule(string packageName)
 {
-    alias Members = TypeTuple!(__traits(allMembers, packageName));
-    alias MessagePackage = PackageMessages!(packageName, Members)[0..$-1]; //Strip off the Last Item.
+    alias Members = TypeTuple!(__traits(allMembers, mixin(packageName)));
+    alias EvaulateMessageModule = GetModuleMessages!(mixin(packageName), Members); //Strip off the Last Item.
 }
 
-template PackageMessages(alias packageName, Members...)
+//Evaluates to a tuple of all members from packagename which derive from Message
+template GetModuleMessages(alias packageName, Members...)
 {
     //pragma(msg, Members);
     alias member = hack!(__traits(getMember, packageName, Members[0]));
@@ -196,16 +209,16 @@ template PackageMessages(alias packageName, Members...)
     {
         static if( Members.length == 1)
         {
-            alias PackageMessages = hack!(member);
+            alias GetModuleMessages = TypeTuple!(member);
         } else {
-            alias PackageMessages = TypeTuple!(hack!(member), PackageMessages!(packageName, Members[1..$]));
+            alias GetModuleMessages = TypeTuple!(hack!(member), GetModuleMessages!(packageName, Members[1..$]));
         }
     } else {
         static if( Members.length == 1)
         {
-            alias PackageMessages = TypeTuple!(void);
+            alias PackageMessages = TypeTuple!();
         } else {
-            alias PackageMessages = TypeTuple!(PackageMessages!(packageName, Members[1..$]));
+            alias GetModuleMessages = TypeTuple!(GetModuleMessages!(packageName, Members[1..$]));
         }
     }
 }

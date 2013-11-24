@@ -5,7 +5,8 @@ private import std.container;
 private import std.array : Appender;
 
 private import std.string : indexOf;
-import util.util;
+
+import util.stringutils;
 
 //TODO: Make this use util.util.readArg; ?
 

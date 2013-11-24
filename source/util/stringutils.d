@@ -1,4 +1,4 @@
-module util.util;
+module util.stringutils;
 
 import std.array;
 /**
