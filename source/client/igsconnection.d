@@ -59,9 +59,7 @@ class IGSConnection : ConnectionInfo
                 auto msg = cast(string)socket.readLine();
                 mh.handleInput( msg );
             }
-
-        } finally {
-            ConnectionInfo.send(new ShutdownMessage());
+        } catch( Exception e ) {
             active = false;
         }
     }
@@ -69,21 +67,27 @@ class IGSConnection : ConnectionInfo
     private void writeLoop()
     {
         debug writefln("%d: IGS WriteTask Started", curThread);
-        while(active)
+        try {
+            while(active)
+            {
+                receive( (shared Message m_) {
+                    auto m = cast(Message)m_; //Remove shared
+                    if(m.supportsIGS)
+                    {
+                        debug writefln("%d: Sending Message", curThread); 
+                        m.writeIGS(socket);
+                        socket.write("\r\n");
+                    }
+                }, //Send raw messages to the client.
+                (string m) {
+                    socket.write(m);
+                    socket.write("\r\t\n");
+                });
+            }
+        }
+        catch( InterruptException e)
         {
-            receive( (shared Message m_) {
-                auto m = cast(Message)m_; //Remove shared
-                if(m.supportsIGS)
-                {
-                    debug writefln("%d: Sending Message", curThread); 
-                    m.writeIGS(socket);
-                    socket.write("\r\n");
-                }
-            }, //Send raw messages to the client.
-            (string m) {
-                socket.write(m);
-                socket.write("\r\n");
-            });
+            //Shutdown
         }
     }
     
@@ -96,6 +100,7 @@ class IGSConnection : ConnectionInfo
 
         readTask.join();
         active = false;
+        writeTask.interrupt();
     }
 
     void send( string m )

@@ -1,6 +1,5 @@
 module messages.channel;
 
-
 import std.typetuple;
 import std.stdio;
 import std.conv;
@@ -34,7 +33,7 @@ class JoinMessage : Message
         who = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
 
         debug writefln("%s: Joined channel %s", who, channel);
-        subscribeToChannel( ci, channel );
+        subscribeToChannel!(ChatChannel)( ci, channel );
         sendToChannel(channel, this);
     }
     
@@ -103,7 +102,7 @@ class WhoListMessage : Message
 
     override void handleMessage(ConnectionInfo ci)
     {
-        foreach(curCi; getChannel(channel).subscriptions.byKey())
+        foreach(curCi; getChannel!(ChatChannel)(channel).subscriptions.byKey())
             whoList ~= curCi.user.Username;
 
         ci.send(this);

@@ -3,6 +3,7 @@ module messages.core;
 import std.typetuple;
 import std.stdio;
 import std.conv;
+import std.exception;
 import std.string : startsWith;
 
 import vibe.core.stream;
@@ -10,6 +11,7 @@ import vibe.core.stream;
 public import msgpack;
 
 import client.connection;
+import channels;
 import messages.auth;
 import messages.chat;
 import messages.channel;
@@ -81,8 +83,16 @@ mixin template MessageMixin(Args...)
 }
 
 
+class InvalidChannelMessageException : Exception 
+{
+    this(Channel chan, Message m, string file = __FILE__, int line = __LINE__)
+    {
+        super("Invalid channel message: " ~ m.opCode.to!string, file, line);
+    }
+}
+
 ///Base message class.   This class should not be serialized or de-serialized.
-class Message
+abstract class Message
 {
     this() pure {}
     void handleMessage(ConnectionInfo ci ) { assert(false, "Not implemented");   }
@@ -96,17 +106,19 @@ class Message
 ///This function serializes messages to a Vibe-D OutputStream with the first item being the opCode for the message type.
 void serialize(T)(OutputStream st, inout(T) msg) if ( is(T == Message) )
 {
-    st.put(msg.opCode); 
+    st.put( msg.opCode ); 
     switch( msg.opCode ){
         foreach( messageType; AllMessages){
             case messageType.opCodeStatic:
             messageType temp = cast(messageType)msg;
             st.write(msgpack.pack(temp));
-            break;
+            goto endSwitch;
         }
         default:
-            throw new MessagePackException("No registered type for opCode");
+            throw new MessagePackException("No registered type for opCode: " ~ msg.opCode.to!string);
     }
+endSwitch:
+    return;
 }
 
 ///See above,  this is a specialized version for when we already know the type at compile-time.
@@ -173,31 +185,30 @@ string JavascriptBindings() {
 
 alias hack(alias T) = T; //Hack to be able to store __traits stuff in an alias
 
-alias AllMessages = EvaulateMessageModules!( "messages.chat", "messages.auth", "messages.channel" );
+alias AllMessages = GetMessagesFromModules!( "messages.chat", "messages.auth", "messages.channel", "messages.game" );
 
 //Accepts a tuple of strings which should be modulenames for the modules which contain messages.
-template EvaulateMessageModules(Packages...)
+template GetMessagesFromModules(Modules...)
 {
-    //pragma(msg, Packages[0]);
-    static if(Packages.length == 1)
+    static if(Modules.length == 1)
     {
-        static if( Packages[0].startsWith("messages"))
-            alias EvaulateMessageModules = TypeTuple!(EvaulateMessageModule!(Packages[0]));
+        static if( Modules[0].startsWith("messages"))
+            alias GetMessagesFromModules = TypeTuple!(GetMessagesFromModule!(Modules[0]));
         else  
-            alias EvaulateMessageModules = TypeTuple!();
+            alias GetMessagesFromModules = TypeTuple!();
     } else {
-        static if( Packages[0].startsWith("messages"))
-            alias EvaulateMessageModules = TypeTuple!(EvaulateMessageModule!(Packages[0]), EvaulateMessageModules!(Packages[1..$]));
+        static if( Modules[0].startsWith("messages"))
+            alias GetMessagesFromModules = TypeTuple!(GetMessagesFromModule!(Modules[0]), GetMessagesFromModules!(Modules[1..$]));
         else  
-            alias EvaulateMessageModules = TypeTuple!(EvaluatePackages!(Packages[1..$]));
+            alias GetMessagesFromModules = TypeTuple!(GetMessagesFromModules!(Modules[1..$]));
     }
 }
 
 //Accepts the name of a package as a string.  Should evaluate to a TypeTuple of all the classes deriving from Message.
-template EvaulateMessageModule(string packageName)
+template GetMessagesFromModule(string packageName)
 {
     alias Members = TypeTuple!(__traits(allMembers, mixin(packageName)));
-    alias EvaulateMessageModule = GetModuleMessages!(mixin(packageName), Members); //Strip off the Last Item.
+    alias GetMessagesFromModule = GetModuleMessages!(mixin(packageName), Members);
 }
 
 //Evaluates to a tuple of all members from packagename which derive from Message
@@ -211,7 +222,7 @@ template GetModuleMessages(alias packageName, Members...)
         {
             alias GetModuleMessages = TypeTuple!(member);
         } else {
-            alias GetModuleMessages = TypeTuple!(hack!(member), GetModuleMessages!(packageName, Members[1..$]));
+            alias GetModuleMessages = TypeTuple!(member, GetModuleMessages!(packageName, Members[1..$]));
         }
     } else {
         static if( Members.length == 1)

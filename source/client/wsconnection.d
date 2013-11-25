@@ -51,28 +51,32 @@ class WSConnection : ConnectionInfo
                     msg.handleMessage(this);
                 }
             }
-        } finally {
+        } catch( Exception e) {
             active = false;
-            send(new ShutdownMessage);
         }
     }
 
     private void writeLoop()
     {
         debug writefln("%d: writetask", curThread);
-        while(active)
-        {
-            receive( (shared Message m_) {
-                auto m = cast(Message)m_; //Remove shared.  
-                //Could use lock() but that would block other threads from reading.  Nobody should be mutating the message anyways.
+        try {
+            while(active)
+            {
+                receive( (shared Message m_) {
+                    auto m = cast(Message)m_; //Remove shared.  
+                    //Could use lock() but that would block other threads from reading.  Nobody should be mutating the message anyways.
 
-                debug writefln("%s: Sending Message", user.Username); 
-                socket.send( (scope OutgoingWebSocketMessage os) { 
-                    serialize(os, m);
-                }, FrameOpcode.binary);
-                
-                
-            });
+                    debug writefln("%s: Sending Message", user.Username); 
+                    socket.send( (scope OutgoingWebSocketMessage os) { 
+                        serialize(os, m);
+                    }, FrameOpcode.binary);
+                    
+                    
+                });
+            }
+        } catch (InterruptException e)
+        {
+            //Shutting down;
         }
     }
 
@@ -83,5 +87,6 @@ class WSConnection : ConnectionInfo
 
         readTask.join();
         active = false;
+        writeTask.interrupt();
     }
 }

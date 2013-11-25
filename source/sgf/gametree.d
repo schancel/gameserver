@@ -5,7 +5,6 @@ import std.container;
 import std.conv;
 import std.array;
 
-
 class GameNode
 {
     static int nextNodeId = 0;
@@ -40,6 +39,12 @@ class GameNode
     GameNode appendChild()
     {
         GameNode newChild = new GameNode(this);
+        Children ~= newChild;
+        return newChild;
+    }
+
+    GameNode appendChild(GameNode newChild)
+    {
         Children ~= newChild;
         return newChild;
     }
