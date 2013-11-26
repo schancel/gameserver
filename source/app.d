@@ -7,6 +7,7 @@ import vibe.d;
 import client.connection;
 import client.igsconnection;
 import client.wsconnection;
+import source.util.config;
 
 import messages.core;
 
@@ -25,6 +26,8 @@ void initiateTelnet(TCPConnection conn)
 
 static this() 
 {
+	config.load();
+
     auto router = new URLRouter;
     router
         .get("*", serveStaticFiles("./public/"))
