@@ -1,4 +1,5 @@
-module source.util.config;
+module util.config;
+
 import std.stdio;
 import std.file;
 import vibe.data.json;

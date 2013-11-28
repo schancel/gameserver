@@ -2,6 +2,27 @@ module util.mysql;
 
 import mysql.connection;
 
+public class Database
+{
+	private static Connection connection;
+
+	public static void connect()
+	{
+		connection = new Connection(
+			config.mySQLHostname.get!string(),
+			config.mySQLUsername.get!string(),
+			config.mySQLPassword.get!string(),
+			config.mySQLDatabase.get!string()
+			);
+	}
+
+	public static ResultSet query(string query)
+	{
+		auto cmd = Command(conn);
+		cmd.sql = query;
+		return cmd.execSQLResult();
+	}
+}
 
 unittest {
     import std.stdio;

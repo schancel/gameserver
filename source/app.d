@@ -7,7 +7,7 @@ import vibe.d;
 import client.connection;
 import client.igsconnection;
 import client.wsconnection;
-import source.util.config;
+import util.config;
 
 import messages.core;
 
