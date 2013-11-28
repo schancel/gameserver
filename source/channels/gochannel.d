@@ -5,6 +5,7 @@ import std.uuid; //For giving the game a UUID
 import channels.core;
 import channels.chatchannel;
 import messages;
+import goban;
 
 import connections;
 import sgf.gametree;
@@ -24,10 +25,12 @@ class GoChannel : ChatChannel  //GoChannels are also chat channels.
     int colors;
     GameNode head;
     GameNode curNode;
+    Goban board;
 
     this(string gamename)
     {
         super(gamename);
+        board = new GobanImpl!(AGARules);
         colors = 2;
     }
 
@@ -66,13 +69,16 @@ class GoChannel : ChatChannel  //GoChannels are also chat channels.
     //Only allow the current player to play if they're adding the correct color.
     void playMove(Connection player, PlayMoveMessage move)
     {
-        if(players[curPlayer] is player)
+        if(players[curPlayer] is player && move.position)
         {
-            //TODO: Implement position checking for valid moves;
-            curNode = curNode.appendChild();
-            curNode.pushProperty( colorProperties[curPlayer % colors], move.position );
-            curPlayer = (curPlayer++) % colors;
-            send(move);
+            Position pos = Position(move.position);
+            if( board.playStone(pos, cast(StoneColor)(curPlayer+1)) )
+            {
+                curNode = curNode.appendChild();
+                curNode.pushProperty( colorProperties[curPlayer % colors], move.position );
+                curPlayer = (curPlayer++) % colors;
+                send(move);
+            }
         }
     }
 }

@@ -40,7 +40,7 @@ class ConnectionSet : Connection
 
     override void broadcast( Message m )
     {
-        assert(0, "Cannot broadcast through a connection set.  Check your code");
+        enforce(0, "Cannot broadcast through a connection set.  Check your code");
     }
 
     override void send( Message m )
@@ -53,12 +53,12 @@ class ConnectionSet : Connection
 
     override void subscribe(Channel chan)
     {
-        assert(0, "Cannot subscribe through a connection set.  Check your code");
+        enforce(0, "Cannot subscribe through a connection set.  Check your code");
     }
 
     override void unsubscribe(Channel chan)
     {
-        assert(0, "Cannot unsubscribe through a connection set.  Check your code");
+        enforce(0, "Cannot unsubscribe through a connection set.  Check your code");
     }
 
     override @property UserInfo userinfo()
