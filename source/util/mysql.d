@@ -1,6 +1,7 @@
 module util.mysql;
 
 import mysql.connection;
+import util.config;
 
 public class Database
 {
@@ -18,7 +19,7 @@ public class Database
 
 	public static ResultSet query(string query)
 	{
-		auto cmd = Command(conn);
+		auto cmd = Command(connection);
 		cmd.sql = query;
 		return cmd.execSQLResult();
 	}

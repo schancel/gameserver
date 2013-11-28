@@ -6,10 +6,11 @@ import std.conv;
 
 import vibe.core.stream;
 
-import client.connection;
+import connections;
 import user.userinfo;
 import channels;
 import messages.core;
+import user;
 
 @OpCoder(50)
 class ChatMessage : Message
@@ -27,9 +28,9 @@ class ChatMessage : Message
         this.channel = channel;
     }
 
-    override void handleMessage(ConnectionInfo ci)
+    override void handleMessage(Connection ci)
     {
-        who = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
+        who = ci.userinfo.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
         
         debug writefln("%s <%s>: %s", channel, who, message );
         sendToChannel(channel, this);
@@ -45,7 +46,6 @@ class ChatMessage : Message
         st.put("> " );
         st.put(message);
         st.flush();
-
     }
     
     mixin messages.MessageMixin!("channel", "message", "who");
@@ -68,12 +68,17 @@ class PrivateMessage : Message
         this.target = target;
     }
     
-    override void handleMessage(ConnectionInfo ci)
+    override void handleMessage(Connection ci)
     {
-        who = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
+        who = ci.userinfo.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
         
         debug writefln("PM <%s> --> <%s> : %s", target, who, message );
-        //sendToUser(target, this);
+        try {
+            sendToUser(target, this);
+        } catch (Exception e)
+        {
+            writefln("TODO: Implement notifying user of offline target");
+        }
     }
     
     override bool supportsIGS() { return true; };

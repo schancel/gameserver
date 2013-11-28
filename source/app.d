@@ -4,9 +4,9 @@ import std.stdio;
 
 import vibe.d;
 
-import client.connection;
-import client.igsconnection;
-import client.wsconnection;
+import connections;
+import connections.igsconnection;
+import connections.wsconnection;
 import util.config;
 
 import messages.core;

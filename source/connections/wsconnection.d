@@ -1,4 +1,4 @@
-module client.wsconnection;
+module connections.wsconnection;
 
 import std.container;
 import std.stdio;
@@ -14,7 +14,7 @@ import vibe.stream.operations;
 
 import msgpack;  //Msg Pack For messages
 
-import client.connection;
+import connections.core;
 
 import messages;
 
@@ -24,7 +24,7 @@ import user.userinfo;
 /****************************************************************************************
 
  *****************************************************************************************/
-class WSConnection : ConnectionInfo
+class WSConnection : ConnectionBase
 { 
     private WebSocket socket;
 
@@ -32,7 +32,7 @@ class WSConnection : ConnectionInfo
     {
         super();
         socket = _conn;
-        user = new UserInfo();
+        userinfo = new UserInfo();
         curThread = socket.toHash();
     }
 

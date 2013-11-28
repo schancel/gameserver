@@ -7,7 +7,7 @@ import std.stdio;
 import std.string : toUpper;
 
 import messages.core;
-import client.connection;
+import connections;
 
 import std.exception;
 
@@ -15,7 +15,7 @@ private __gshared Channel[string] channels;
 private __gshared Object chanMutex = new Object();
 
 ///Get a channel of a particular type, if possible.  Possibly throws invalidcastexception.
-Channel getChannel(T)(string channelName) if( is( T : Channel ) )
+T getChannel(T)(string channelName) if( is( T : Channel ) )
 {
     synchronized(chanMutex) 
     {
@@ -31,7 +31,7 @@ Channel getChannel(T)(string channelName) if( is( T : Channel ) )
 }
 
 ///Subscribe to a channel of a particular type.  
-void subscribeToChannel(T)(ConnectionInfo ci, string channelName) if( is( T : Channel ) )
+void subscribeToChannel(T)(Connection ci, string channelName) if( is( T : Channel ) )
 {
     Channel chan = getChannel!(T)(channelName);
     chan.subscribe(ci);
@@ -39,7 +39,7 @@ void subscribeToChannel(T)(ConnectionInfo ci, string channelName) if( is( T : Ch
 }
 
 ///Unsubscribe from a channel by name.   Any type of channel will work, since we're not instantiating the channel if it doesn't exist.
-void unsubscribeToChannel(ConnectionInfo conn, string channelName)
+void unsubscribeToChannel(Connection conn, string channelName)
 {
     if( auto chan = channelName.toUpper() in channels )  
     {
@@ -75,7 +75,7 @@ abstract class Channel
     private bool active;  //Tell our observer to stop.
     
     private Task observer; //Observes the channel and forwards messages to clients.
-    bool[ConnectionInfo] subscriptions;
+    bool[Connection] subscriptions;
 
     private this()
     {
@@ -131,11 +131,11 @@ abstract class Channel
         observer.send(cast(shared)m);
     }
     
-    void subscribe(ConnectionInfo conn) {
+    void subscribe(Connection conn) {
         subscriptions[conn] = true;
     };
     
-    void unsubscribe(ConnectionInfo conn) {
+    void unsubscribe(Connection conn) {
         subscriptions.remove(conn);
         if( subscriptions.length == 0)
         {

@@ -8,7 +8,7 @@ import std.string : toUpper;
 
 import messages.core;
 import channels.core;
-import client.connection;
+import connections;
 
 import std.exception;
 

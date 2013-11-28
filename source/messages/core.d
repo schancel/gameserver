@@ -10,7 +10,7 @@ import vibe.core.stream;
 
 public import msgpack;
 
-import client.connection;
+import connections;
 import channels;
 import messages.auth;
 import messages.chat;
@@ -95,7 +95,7 @@ class InvalidChannelMessageException : Exception
 abstract class Message
 {
     this() pure {}
-    void handleMessage(ConnectionInfo ci ) { assert(false, "Not implemented");   }
+    void handleMessage(Connection ci ) { assert(false, "Not implemented");   }
     bool supportsIGS() { return false; }
     void writeIGS(OutputStream st) { assert(false, "Not implemented");    }
     ubyte opCode() const { assert(false, "Not implemented");    } 

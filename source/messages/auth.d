@@ -1,6 +1,6 @@
 module messages.auth;
 
-import client.connection;
+import connections;
 
 import std.typetuple;
 import std.stdio;
@@ -8,7 +8,7 @@ import std.conv;
 
 import vibe.core.stream;
 
-import user.userinfo;
+import user;
 import channels;
 
 import messages.core;
@@ -38,14 +38,14 @@ class AuthMessage : Message
         this.password = password;
     }
     
-    override void handleMessage(ConnectionInfo ci)
+    override void handleMessage(Connection ci)
     {
-        auto oldName = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
-        ci.user = new UserInfo(username);
+        auto oldName = ci.userinfo.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
+        ci.userinfo = new UserInfo(username);
 
-        debug writefln("%s: Authenticated as %s", oldName, ci.user.Username);
+        debug writefln("%s: Authenticated as %s", oldName, ci.userinfo.Username);
 
-        ci.send(new AuthResponseMessage(ci.user.Username));
+        ci.send(new AuthResponseMessage(ci.userinfo.Username));
     }
     
     mixin messages.MessageMixin!("username", "password");

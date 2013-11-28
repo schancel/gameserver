@@ -9,7 +9,7 @@ import vibe.core.stream;
 import user.userinfo;
 
 import channels;
-import client.connection;
+import connections;
 
 import messages.core;
 
@@ -28,9 +28,9 @@ class JoinMessage : Message
         this.who = who;
     }
 
-    override void handleMessage(ConnectionInfo ci)
+    override void handleMessage(Connection ci)
     {
-        who = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
+        who = ci.userinfo.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
 
         debug writefln("%s: Joined channel %s", who, channel);
         subscribeToChannel!(ChatChannel)( ci, channel );
@@ -54,9 +54,9 @@ class PartMessage : Message
         this.who = who;
     }
     
-    override void handleMessage(ConnectionInfo ci)
+    override void handleMessage(Connection ci)
     {
-        who = ci.user.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
+        who = ci.userinfo.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
         
         debug writefln("%s: Parted channel %s", who, channel);
         sendToChannel(channel, this);
@@ -78,9 +78,9 @@ class WhoMessage : Message
         this.channel = channel;
     }
 
-    override void handleMessage(ConnectionInfo ci)
+    override void handleMessage(Connection ci)
     {
-        debug writefln("%s: Requested users of channel %s", ci.user.Username, channel);
+        debug writefln("%s: Requested users of channel %s", ci.userinfo.Username, channel);
         new WhoListMessage(channel).handleMessage(ci);
     }
 
@@ -100,10 +100,10 @@ class WhoListMessage : Message
         this.channel = channel;
     }
 
-    override void handleMessage(ConnectionInfo ci)
+    override void handleMessage(Connection ci)
     {
         foreach(curCi; getChannel!(ChatChannel)(channel).subscriptions.byKey())
-            whoList ~= curCi.user.Username;
+            whoList ~= curCi.userinfo.Username;
 
         ci.send(this);
     }

@@ -1,4 +1,4 @@
-module client.igsconnection;
+module connections.igsconnection;
 
 import std.stdio;
 import core.time;
@@ -15,7 +15,7 @@ import vibe.core.concurrency;
 import vibe.core.log;
 import vibe.stream.operations;
 
-import client.connection;
+import connections.core;
 import channels;
 import user.userinfo;
 import util.stringutils;
@@ -25,7 +25,7 @@ const prompt = "1 5";
 /****************************************************************************************
 
  *****************************************************************************************/
-class IGSConnection : ConnectionInfo
+class IGSConnection : ConnectionBase
 { 
     private TCPConnection socket;
     private IGSMessageHandler mh;
@@ -44,7 +44,7 @@ class IGSConnection : ConnectionInfo
         socket.write("Password: ");
         string password = cast(string)socket.readLine();
 
-        user = new UserInfo(username, password);
+        userinfo = new UserInfo(username, password);
     }
 
     void readLoop()
