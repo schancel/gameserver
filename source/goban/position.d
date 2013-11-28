@@ -4,16 +4,22 @@ import std.exception : enforce;
 
 struct Position
 {
-    ubyte x;
-    ubyte y;
+    byte x;
+    byte y;
 
     /*** 
      * Construct position from x and y;
      */
-    this(ubyte x, ubyte y)
+    this(byte x, byte y)
     {
         this.x = x;
         this.y = y;
+    }
+
+    this(int x, int y)
+    {
+        this.x = cast(byte)x;
+        this.y = cast(byte)y;
     }
 
     /***
