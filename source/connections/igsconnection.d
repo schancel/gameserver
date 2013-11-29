@@ -57,7 +57,12 @@ class IGSConnection : ConnectionBase
                 
                 send(prompt);
                 auto msg = cast(string)socket.readLine();
-                mh.handleInput( msg );
+                try {
+                    mh.handleInput( msg );
+                } catch( Exception e)
+                {
+                    send("5 " ~ e.msg);
+                }
             }
         } catch( Exception e ) {
             active = false;
@@ -87,7 +92,7 @@ class IGSConnection : ConnectionBase
         }
         catch( InterruptException e)
         {
-            //Shutdown
+            //Shutting down
         }
     }
     
@@ -145,7 +150,7 @@ class IGSMessageHandler
                 }
             }
             default:
-                ci.send("5 "~ cmd~": Unknown command.");
+                enforce(false, cmd~": Unknown command.");
                 break;
         }
     end:

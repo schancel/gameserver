@@ -49,7 +49,12 @@ class WSConnection : ConnectionBase
                 auto msg = deserialize(msgData);
                 if(msg !is null) 
                 {
-                    msg.handleMessage(this);
+                    try {
+                        msg.handleMessage(this);
+                    } catch( Exception e)
+                    {
+                        send(new ErrorMessage(e.msg));
+                    }
                 }
             }
         } catch( Exception e) {
