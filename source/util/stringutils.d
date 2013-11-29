@@ -5,53 +5,102 @@ import std.array;
  * Destructively read a argument, and return it.  May allocate if there are escape characters in the string
  *
  */
+enum {
+    START = 1,
+    READING,
+    QUOTED, 
+    END
+}
+
 string readArg(char quote = '\"', char escape = '\\', char delimiter = ' ')(ref string msg)
 {
     bool quoted = false;
-    int startIndex = 0;
+    int startIndex = 0, endIndex = 0;
     Appender!(string) output;
 
     int i = 0;
+    short state = START;
+
     for( ; i < msg.length; i++ )
     {
         switch( msg[i] )
         {
             case escape:
-                output.put(msg[startIndex..i]);
-                startIndex = ++i; //Skip the next character
+                if( state == END) goto end; //Goto end, don't want to destroy the next argument.
+                if(state == READING) output.put(msg[startIndex..i]);
+                startIndex = ++i; //Skip next item.
+                if( state == START) state = READING;
                 break;
             case quote:
-                quoted = !quoted;
-                if( quoted && i == 0) {
-                    startIndex = i + 1; //We don't want to read the initial quote.
-                    break;
-                } else if ( quoted )  {
-                    quoted = false;
-                    continue;
-                } else {
-                    goto case delimiter; //Explicite fall through
-                }
-            case delimiter:
-                if( ! quoted ) {
-                    if( i == startIndex) {
+                final switch( state )
+                {
+                    case START:
                         startIndex++;
-                        continue;
-                    } else {
+                        state = QUOTED;
+                        break;
+                        
+                    case READING:
+                        break;
+                        
+                    case QUOTED:
+                        state = END;
+                        endIndex = i;
+                        break;
+                        
+                    case END:
                         goto end;
-                    }
+                }
+                break;
+            case delimiter:
+                final switch( state )
+                {
+                    case START:
+                        startIndex = i+1; //Ignore delimiter.
+                        break;
+                        
+                    case READING:
+                        state = END;
+                        endIndex = i;
+                        break;
+                        
+                    case QUOTED: //Do nothing
+                        break;
+                        
+                    case END:
+                        //Do Nothing
+                        break;
                 }
                 break;
             default:
-                continue; 
+                final switch( state )
+                {
+                    case START:
+                        state = READING;
+                        break;
+                        
+                    case READING:
+                        break;
+                        
+                    case QUOTED:
+                        break;
+                        
+                    case END:
+                        goto end;
+                }
+                break;
         }
     }
 
 end:
-    auto arg = msg[startIndex..i];
-    if( i+1 < msg.length )
-        msg = msg[i+1..$]; //remove the delimiter
-    else
+    string arg;
+    if( i <= msg.length && state == END)
+    {
+        arg = msg[startIndex..endIndex];
+        msg = msg[i..$];
+    } else {
+        arg = msg[startIndex..i];
         msg = msg[$..$];
+    }
 
     if( output.data.length == 0) {
         return arg;
@@ -67,7 +116,7 @@ alias readAll(char quote = '"', char escape = '\\')  = readArg!(quote, escape, 0
 
 unittest {
     import std.stdio;
-    auto msg = "TELL \"Side Effect\" \"Hello how are you?";
+    auto msg = "TELL \"Side Effect\" \"Hello how are you?\"";
     auto arg = msg.readArg();
     assert( arg == "TELL", "First arg wrong:" ~arg ~ " Msg:" ~ msg);
     arg = msg.readArg(); 
@@ -75,4 +124,11 @@ unittest {
     arg = msg.readAll(); 
     assert( arg == "Hello how are you?", "Third arg wrong: " ~arg ~ " Msg: " ~ msg);
 
+    msg = "TELL \"Side Effect\" He\"llo how are you?\"";
+    arg = msg.readArg();
+    assert( arg == "TELL", "First arg wrong:" ~arg ~ " Msg:" ~ msg);
+    arg = msg.readArg(); 
+    assert( arg == "Side Effect", "Second arg wrong: " ~arg ~ " Msg: " ~ msg);
+    arg = msg.readAll(); 
+    assert( arg == "He\"llo how are you?\"", "Third arg wrong: " ~arg ~ " Msg: " ~ msg);
 }
