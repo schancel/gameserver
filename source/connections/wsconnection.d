@@ -11,6 +11,7 @@ import vibe.http.server;
 import vibe.http.websockets;
 import vibe.core.concurrency;
 import vibe.stream.operations;
+import vibe.core.log;
 
 import msgpack;  //Msg Pack For messages
 
@@ -58,7 +59,7 @@ class WSConnection : ConnectionBase
 
     private void writeLoop()
     {
-        debug writefln("%d: writetask", curThread);
+        logDebug("%d: writetask", curThread);
         try {
             while(active)
             {
@@ -66,7 +67,7 @@ class WSConnection : ConnectionBase
                     auto m = cast(Message)m_; //Remove shared.  
                     //Could use lock() but that would block other threads from reading.  Nobody should be mutating the message anyways.
 
-                    debug writefln("%s: Sending Message", user.Username); 
+                    logDebug("%s: Sending Message", user.Username); 
                     socket.send( (scope OutgoingWebSocketMessage os) { 
                         serialize(os, m);
                     }, FrameOpcode.binary);

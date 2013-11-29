@@ -72,13 +72,17 @@ class GoChannel : ChatChannel  //GoChannels are also chat channels.
         if(players[curPlayer] is player && move.position)
         {
             Position pos = Position(move.position);
-            if( board.playStone(pos, cast(StoneColor)(curPlayer+1)) )
+            if( board.playStone(pos, cast(StoneColor)((curPlayer+1) % colors)) )
             {
                 curNode = curNode.appendChild();
                 curNode.pushProperty( colorProperties[curPlayer % colors], move.position );
                 curPlayer = (curPlayer++) % colors;
                 send(move);
+            } else {
+                player.send(new InvalidMoveMessage());
             }
+        } else {
+            player.send(new InvalidMoveMessage());
         }
     }
 }

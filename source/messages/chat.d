@@ -5,6 +5,7 @@ import std.stdio;
 import std.conv;
 
 import vibe.core.stream;
+import vibe.core.log;
 
 import connections;
 import user.userinfo;
@@ -32,7 +33,7 @@ class ChatMessage : Message
     {
         who = ci.userinfo.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
         
-        debug writefln("%s <%s>: %s", channel, who, message );
+        logDebug("%s <%s>: %s", channel, who, message );
         sendToChannel(channel, this);
     }
 
@@ -72,7 +73,7 @@ class PrivateMessage : Message
     {
         who = ci.userinfo.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
         
-        debug writefln("PM <%s> --> <%s> : %s", target, who, message );
+        logDebug("PM <%s> --> <%s> : %s", target, who, message );
         try {
             sendToUser(target, this);
         } catch (Exception e)

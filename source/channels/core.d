@@ -2,6 +2,7 @@ module channels.core;
 
 import vibe.core.core;
 import vibe.core.concurrency;
+import vibe.core.log;
 
 import std.stdio;
 import std.string : toUpper;
@@ -139,7 +140,7 @@ abstract class Channel
         subscriptions.remove(conn);
         if( subscriptions.length == 0)
         {
-            debug writefln("Disposing %s", name);
+            logDebug("Disposing %s", name);
             channels.remove(name);
             active = false;
             observer.interrupt();

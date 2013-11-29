@@ -26,8 +26,6 @@ void initiateTelnet(TCPConnection conn)
 
 static this() 
 {
-	config.load();
-
     auto router = new URLRouter;
     router
         .get("*", serveStaticFiles("./public/"))
@@ -35,7 +33,7 @@ static this()
             .get("/js/rpc_bindings.js", (req, res) { static immutable string jsBindings = JavascriptBindings(); res.writeBody(jsBindings); })
             .get("/", staticRedirect("/index.html"));
 
-    //setLogLevel(LogLevel.verbose4);
+    setLogLevel(LogLevel.debugV);
     setLogFile("log.txt");
 
     auto settings = new HTTPServerSettings;
@@ -43,9 +41,6 @@ static this()
     //settings.sslContext = new SSLContext( "server.crt", "server.key"); //Support for SSL certificates.
 
     //Lets support IGS also.
-    runTask(() {
-        listenTCP_s(6969, &initiateTelnet);// This blocks, so we need to spawn another event loop.
-    });
-
+    listenTCP_s(6969, &initiateTelnet);// This blocks, so we need to spawn another event loop.
     listenHTTP(settings, router);
 }

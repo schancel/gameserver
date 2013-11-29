@@ -5,6 +5,7 @@ import std.stdio;
 import std.conv;
 
 import vibe.core.stream;
+import vibe.core.log;
 
 import user.userinfo;
 
@@ -32,7 +33,7 @@ class JoinMessage : Message
     {
         who = ci.userinfo.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
 
-        debug writefln("%s: Joined channel %s", who, channel);
+        logDebug("%s: Joined channel %s", who, channel);
         subscribeToChannel!(ChatChannel)( ci, channel );
         sendToChannel(channel, this);
     }
@@ -58,7 +59,7 @@ class PartMessage : Message
     {
         who = ci.userinfo.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
         
-        debug writefln("%s: Parted channel %s", who, channel);
+        logDebug("%s: Parted channel %s", who, channel);
         sendToChannel(channel, this);
         unsubscribeToChannel( ci, channel );
     }
@@ -80,7 +81,7 @@ class WhoMessage : Message
 
     override void handleMessage(Connection ci)
     {
-        debug writefln("%s: Requested users of channel %s", ci.userinfo.Username, channel);
+        logDebug("%s: Requested users of channel %s", ci.userinfo.Username, channel);
         new WhoListMessage(channel).handleMessage(ci);
     }
 

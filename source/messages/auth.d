@@ -7,6 +7,7 @@ import std.stdio;
 import std.conv;
 
 import vibe.core.stream;
+import vibe.core.log;
 
 import user;
 import channels;
@@ -43,7 +44,7 @@ class AuthMessage : Message
         auto oldName = ci.userinfo.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
         ci.userinfo = new UserInfo(username);
 
-        debug writefln("%s: Authenticated as %s", oldName, ci.userinfo.Username);
+        logDebug("%s: Authenticated as %s", oldName, ci.userinfo.Username);
 
         ci.send(new AuthResponseMessage(ci.userinfo.Username));
     }

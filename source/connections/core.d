@@ -53,7 +53,7 @@ class ConnectionBase : Connection
 
     ~this()
     {
-        debug writefln("%d: disconnected", curThread);
+        logDebug("%d: disconnected", curThread);
         foreach( sub; subscriptions.byKey() )
         {
             sub.unsubscribe(this);

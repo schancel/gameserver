@@ -132,3 +132,5 @@ class GobanImpl(rulesType : Rules) : Goban
         state.captures[color] += captures;
     }
 }
+
+//TODO: write unittest!

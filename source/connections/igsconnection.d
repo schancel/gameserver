@@ -49,7 +49,7 @@ class IGSConnection : ConnectionBase
 
     void readLoop()
     {
-        debug writefln("%d: IGS ReadTask Started", curThread);
+        logDebug("%d: IGS ReadTask Started", curThread);
         try
         { 
             while(socket.connected && active)
@@ -66,7 +66,7 @@ class IGSConnection : ConnectionBase
     
     private void writeLoop()
     {
-        debug writefln("%d: IGS WriteTask Started", curThread);
+        logDebug("%d: IGS WriteTask Started", curThread);
         try {
             while(active)
             {
@@ -74,7 +74,7 @@ class IGSConnection : ConnectionBase
                     auto m = cast(Message)m_; //Remove shared
                     if(m.supportsIGS)
                     {
-                        debug writefln("%d: Sending Message", curThread); 
+                        logDebug("%d: Sending Message", curThread); 
                         m.writeIGS(socket);
                         socket.write("\r\n");
                     }

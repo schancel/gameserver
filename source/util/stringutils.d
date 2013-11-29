@@ -22,15 +22,23 @@ string readArg(char quote = '\"', char escape = '\\', char delimiter = ' ')(ref 
                 break;
             case quote:
                 quoted = !quoted;
-                if( quoted ) {
+                if( quoted && i == 0) {
                     startIndex = i + 1; //We don't want to read the initial quote.
                     break;
+                } else if ( quoted )  {
+                    quoted = false;
+                    continue;
                 } else {
                     goto case delimiter; //Explicite fall through
                 }
             case delimiter:
                 if( ! quoted ) {
-                    goto end;
+                    if( i == startIndex) {
+                        startIndex++;
+                        continue;
+                    } else {
+                        goto end;
+                    }
                 }
                 break;
             default:
@@ -55,7 +63,7 @@ end:
     assert(false, "We shouldn't be here");
 }
 
-alias readAll = readArg!('"', '\\', 0x00);
+alias readAll(char quote = '"', char escape = '\\')  = readArg!(quote, escape, 0x00);
 
 unittest {
     import std.stdio;
