@@ -46,6 +46,52 @@ class NewGameMessage : Message
     mixin messages.MessageMixin!("sgfData");
 }
 
+///User is ready to play game.
+@OpCoder(101)
+class AddPlayerMessage : Message
+{
+    string game;
+    
+    override void handleMessage(Connection ci)
+    {   
+        auto gogame = getChannel!(GoChannel)(game);
+    }
+    
+    mixin messages.MessageMixin!("game");
+}
+
+///User is ready to play game.
+@OpCoder(102)
+class RemovePlayerMessage : Message
+{
+    string game;
+    
+    override void handleMessage(Connection ci)
+    {   
+        auto gogame = getChannel!(GoChannel)(game);
+       
+    }
+    
+    mixin messages.MessageMixin!("game");
+}
+
+///User is ready to play game.
+@OpCoder(103)
+class ReadyMessage : Message
+{
+    string game;
+
+    override void handleMessage(Connection ci)
+    {   
+        auto gogame = getChannel!(GoChannel)(game);
+
+        gogame.readyPlayer(ci);
+    }
+
+    mixin messages.MessageMixin!("game");
+}
+
+
 ///Send this message to initiate a close of the connection.
 @OpCoder(110)
 class PlayMoveMessage : Message
@@ -88,18 +134,5 @@ class GotoMoveMessage : Message
 }
 
 
-@OpCoder(120)
-class InvalidMoveMessage : Message
-{
-    string game;
 
-    this() pure {}
-
-    this(string game)
-    {
-        this.game = game;
-    }
-
-    mixin messages.MessageMixin!("game");
-}
 
