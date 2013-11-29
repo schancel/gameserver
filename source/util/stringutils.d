@@ -5,7 +5,7 @@ import std.array;
  * Destructively read a argument, and return it.  May allocate if there are escape characters in the string
  *
  */
-enum {
+private enum {
     START = 1,
     READING,
     QUOTED, 
@@ -97,7 +97,7 @@ end:
     {
         arg = msg[startIndex..endIndex];
         msg = msg[i..$];
-    } else {
+    } else { //String ended before end-state, grab everything.
         arg = msg[startIndex..i];
         msg = msg[$..$];
     }
@@ -121,7 +121,7 @@ unittest {
     assert( arg == "TELL", "First arg wrong:" ~arg ~ " Msg:" ~ msg);
     arg = msg.readArg(); 
     assert( arg == "Side Effect", "Second arg wrong: " ~arg ~ " Msg: " ~ msg);
-    arg = msg.readAll(); 
+    arg = msg.readArg(); 
     assert( arg == "Hello how are you?", "Third arg wrong: " ~arg ~ " Msg: " ~ msg);
 
     msg = "TELL \"Side Effect\" He\"llo how are you?\"";

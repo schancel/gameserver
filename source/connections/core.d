@@ -40,7 +40,7 @@ class ConnectionBase : Connection
     protected{
         protected Task writeTask, readTask;
         bool active;
-        UserInfo user;
+        UserInfo _userinfo;
         bool[Channel] subscriptions;
         ulong curThread;
         bool[string] prefs;
@@ -90,17 +90,17 @@ class ConnectionBase : Connection
 
     override @property UserInfo userinfo()
     {
-        return this.user;
+        return this._userinfo;
     }
 
     override @property void userinfo(UserInfo ui)
     {
-        if( !user || !ui || ui.Username != user.Username )
+        if( !_userinfo || !ui || ui.Username != _userinfo.Username )
         {
-            if( user ) unregisterUser(this.user.Username, this);
+            if( _userinfo ) unregisterUser(this._userinfo.Username, this);
             if( ui ) registerUser(ui.Username, this);
         }
-        this.user = ui;
+        this._userinfo = ui;
     }
 
     override

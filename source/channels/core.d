@@ -56,16 +56,8 @@ void sendToChannel( string channelName, Message m)
         if( Channel* p = channelName.toUpper() in channels )  {
             (*p).send(m);
         } else {
-            throw new NonExistantChannel(channelName);
+            enforce(false, "Invalid channel" ~ channelName);
         }
-    }
-}
-
-///Thrown when trying to send to a channel that doesn't exist.
-class NonExistantChannel : Exception {
-    this(string channel)
-    {
-        super("Non existant channel: " ~ channel);
     }
 }
 

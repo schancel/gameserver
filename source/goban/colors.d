@@ -8,5 +8,4 @@ enum StoneColor
     RED = 3,
     GREEN = 4,
     VIOLET = 5,
-    OTHER = -1,
 }
