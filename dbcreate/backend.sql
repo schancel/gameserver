@@ -1,106 +1,150 @@
-/*
-SQLyog Ultimate v10.00 Beta1
-MySQL - 5.6.12-log : Database - suji_auth
-*********************************************************************
-*/
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 
-/*!40101 SET NAMES utf8 */;
+SHOW WARNINGS;
+DROP SCHEMA IF EXISTS `sujigo` ;
+CREATE SCHEMA IF NOT EXISTS `sujigo` DEFAULT CHARACTER SET utf8 ;
+SHOW WARNINGS;
+USE `sujigo` ;
 
-/*!40101 SET SQL_MODE=''*/;
+-- -----------------------------------------------------
+-- Table `accounts`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `accounts` ;
 
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-CREATE DATABASE /*!32312 IF NOT EXISTS*/`suji_auth` /*!40100 DEFAULT CHARACTER SET utf8 */;
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `accounts` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(16) NOT NULL,
+  `pass` VARCHAR(256) NOT NULL DEFAULT '',
+  `salt` VARCHAR(45) NULL DEFAULT 'UUID()',
+  `admin_level` INT(11) NULL DEFAULT NULL,
+  `email` VARCHAR(40) NULL DEFAULT 'none',
+  `title` INT(11) NULL DEFAULT NULL,
+  `rank` INT(11) NULL DEFAULT NULL,
+  `icon` INT(11) NULL DEFAULT NULL,
+  `username_color` INT(11) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 4
+DEFAULT CHARACTER SET = latin1;
 
-USE `suji_auth`;
+SHOW WARNINGS;
+CREATE UNIQUE INDEX `USERNAME` ON `accounts` (`username` ASC);
 
-/*Table structure for table `accounts` */
+SHOW WARNINGS;
 
-DROP TABLE IF EXISTS `accounts`;
+-- -----------------------------------------------------
+-- Table `titles`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `titles` ;
 
-CREATE TABLE `accounts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(16) NOT NULL,
-  `sha_userpass_hash` varchar(40) NOT NULL DEFAULT '',
-  `admin_level` int(11) DEFAULT NULL,
-  `email` varchar(40) NOT NULL DEFAULT 'none',
-  `title` int(11) DEFAULT NULL,
-  `rank` int(11) DEFAULT NULL,
-  `icon` int(11) DEFAULT NULL,
-  `username_color` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`,`username`,`sha_userpass_hash`,`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `titles` (
+  `title_id` INT(11) NOT NULL,
+  `title_text` VARCHAR(64) NULL DEFAULT NULL,
+  `unique` TINYINT(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`title_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1;
 
-/*Table structure for table `awarded_titles` */
+SHOW WARNINGS;
 
-DROP TABLE IF EXISTS `awarded_titles`;
+-- -----------------------------------------------------
+-- Table `awarded_titles`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `awarded_titles` ;
 
-CREATE TABLE `awarded_titles` (
-  `user_id` int(11) NOT NULL,
-  `title_id` int(11) NOT NULL,
-  PRIMARY KEY (`user_id`,`title_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `awarded_titles` (
+  `accounts_id` INT(11) NOT NULL,
+  `title_id` INT(11) NOT NULL,
+  PRIMARY KEY (`accounts_id`, `title_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1;
 
-/*Table structure for table `group_members` */
+SHOW WARNINGS;
 
-DROP TABLE IF EXISTS `group_members`;
+-- -----------------------------------------------------
+-- Table `relationships`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `relationships` ;
 
-CREATE TABLE `group_members` (
-  `group_id` int(10) NOT NULL,
-  `user_id` int(10) NOT NULL,
-  `member_level` smallint(6) DEFAULT '0',
-  PRIMARY KEY (`group_id`,`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `relationships` (
+  `accounts_id` INT(11) NOT NULL,
+  `buddy_id` INT(11) NOT NULL,
+  `type` INT(11) NOT NULL,
+  PRIMARY KEY (`accounts_id`, `buddy_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = latin1;
 
-/*Table structure for table `groups` */
+SHOW WARNINGS;
+CREATE INDEX `fk_accounts_has_accounts_accounts1_idx` ON `relationships` (`accounts_id` ASC);
 
-DROP TABLE IF EXISTS `groups`;
+SHOW WARNINGS;
 
-CREATE TABLE `groups` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `name` varchar(32) NOT NULL,
-  `accessType` tinyint(3) DEFAULT NULL,
-  `owner` int(11) DEFAULT NULL,
-  `motd` varchar(1024) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+-- -----------------------------------------------------
+-- Table `user_messages`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `user_messages` ;
 
-/*Table structure for table `titles` */
+SHOW WARNINGS;
+CREATE TABLE IF NOT EXISTS `user_messages` (
+  `accounts_id` INT(11) NOT NULL,
+  `sender_id` INT(11) NOT NULL,
+  `message_type` TINYINT(3) NULL DEFAULT NULL,
+  `message` VARCHAR(256) NULL DEFAULT NULL,
+  PRIMARY KEY (`accounts_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
 
-DROP TABLE IF EXISTS `titles`;
+SHOW WARNINGS;
+CREATE INDEX `fk_user_messages_accounts2_idx` ON `user_messages` (`accounts_id` ASC);
 
-CREATE TABLE `titles` (
-  `title_id` int(11) NOT NULL,
-  `title_text` varchar(64) DEFAULT NULL,
-  `unique` tinyint(4) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`title_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+SHOW WARNINGS;
+USE `sujigo` ;
 
-/*Table structure for table `user_messages` */
+-- -----------------------------------------------------
+-- function auth_account
+-- -----------------------------------------------------
 
-DROP TABLE IF EXISTS `user_messages`;
+USE `sujigo`;
+DROP function IF EXISTS `auth_account`;
+SHOW WARNINGS;
 
-CREATE TABLE `user_messages` (
-  `sender_id` int(10) DEFAULT NULL,
-  `receiver_id` int(10) DEFAULT NULL,
-  `message_type` tinyint(3) DEFAULT NULL,
-  `message` varchar(256) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+DELIMITER $$
+USE `sujigo`$$
+CREATE DEFINER=`root`@`localhost` FUNCTION `auth_account`(p_user VARCHAR(16), p_pass VARCHAR(256)) RETURNS varchar(16) CHARSET utf8
+BEGIN
+	SELECT USERNAME FROM accounts WHERE username = p_user and pass = SHA2(CONCAT(p_pass, salt), 256) INTO @v_user;
 
-/*Table structure for table `user_relations` */
+	RETURN @v_user;
+RETURN 1;
+END$$
+SHOW WARNINGS;
 
-DROP TABLE IF EXISTS `user_relations`;
+-- -----------------------------------------------------
+-- procedure create_account
+-- -----------------------------------------------------
 
-CREATE TABLE `user_relations` (
-  `user_id` int(10) unsigned NOT NULL,
-  `user2_id` int(10) NOT NULL,
-  `relation_type` tinyint(4) DEFAULT NULL,
-  PRIMARY KEY (`user_id`,`user2_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+USE `sujigo`;
+DROP procedure IF EXISTS `create_account`;
+SHOW WARNINGS;
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+DELIMITER $$
+USE `sujigo`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_account`(P_username varchar(16), P_passw varchar(256))
+BEGIN
+	SET @V_SALT = UUID();
+	SET @V_PASS = SHA2(CONCAT(P_PASSW, @V_SALT), 256);
+
+	INSERT INTO accounts (username, pass, salt)
+		VALUES (P_username, @V_PASS, @V_SALT);
+END$$
+SHOW WARNINGS;
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
