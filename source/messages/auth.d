@@ -13,6 +13,7 @@ import user;
 import channels;
 
 import messages.core;
+import util.mysql;
 
 ///Send this message to initiate a close of the connection.
 ///
@@ -41,10 +42,18 @@ class AuthMessage : Message
     
     override void handleMessage(Connection ci)
     {
-        auto oldName = ci.userinfo.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
-        ci.userinfo = new UserInfo(username);
+        writeln("What2");
 
-        logDebug("%s: Authenticated as %s", oldName, ci.userinfo.Username);
+        auto oldName = ci.userinfo ? ci.userinfo.Username : "(null)"; //Overwrite whatever nonsense the client might have sent with the correct name.
+
+        writeln("Hrm");
+        if( Database.AuthUser(username, password) )
+        {
+            ci.userinfo = new UserInfo(username);
+            logDebug("%s: Authenticated as %s", oldName, ci.userinfo.Username);
+        } else {
+            ci.userinfo = new UserInfo("AnonymousCoward");
+        }
 
         ci.send(new AuthResponseMessage(ci.userinfo.Username));
     }

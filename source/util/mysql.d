@@ -8,20 +8,20 @@ import util.config;
 
 public class Database
 {
-    static MysqlDB mdb;
+    private static MysqlDB _mdb;
 
     static Command authUserCmd();
 
-	private static auto connect()
+	@property private static auto mdb()
 	{
-        if( !mdb )
-            mdb = new MysqlDB(Config.mySQLHostname.get!string(),
+        if( !_mdb )
+            _mdb = new MysqlDB(Config.mySQLHostname.get!string(),
                               Config.mySQLUsername.get!string(),
                               Config.mySQLPassword.get!string(),
                               Config.mySQLDatabase.get!string()
                               );
 
-        return mdb.lockConnection();
+        return _mdb;
 	}
 
 
@@ -29,39 +29,42 @@ public class Database
 
 	public static UserInfo GetUserInfo(string username)
 	{
-        auto conn = connect();
+        import std.stdio;
+
+        auto conn = mdb.lockConnection();
         Command cmd = Command(conn);
 
-        cmd.sql = "SELECT username FROM accounts WHERE username = ?";
-
+        cmd.sql = "SELECT username FROM accounts WHERE username=?";
+        cmd.prepare();
+        writeln("Hrm");
         cmd.bindParameter(username, 0);
-        auto rs = cmd.execSQLResult();
+        writeln("Hrm");
+
+        auto rs = cmd.execPreparedResult();
         foreach(row; rs)
             return new UserInfo(row[0].get!string);
 
         enforce(false, "Unknown user");
         return null;
-	}
+    }
 
+    static public bool AuthUser(string username, string password)
+    {
+        import std.stdio;
+        
+        auto conn = mdb.lockConnection();
+        Command cmd = Command(conn);
 
-
+        byte reply;
+        cmd.sql="";
+        cmd.execFunction("auth_account", reply, username, password);
+       
+        return reply != 0;
+    }
 }
 
 unittest {
-    //"localhost", "sujigo","f00b4r", "suji_auth"
     import std.stdio;
-    auto conn = new Connection(
-        Config.mySQLHostname.get!string(),
-        Config.mySQLUsername.get!string(),
-        Config.mySQLPassword.get!string(),
-        Config.mySQLDatabase.get!string());
-    auto cmd = Command(conn);
-    ResultSet rs;
-
-    cmd.sql = "SELECT * FROM accounts";
-    rs = cmd.execSQLResult();
-    foreach(result; rs)
-    {
-        writeln(result);
-    }
+    writeln(Database.GetUserInfo("eluusive").Username);
+    writeln(Database.AuthUser("eluusive", "testie"));
 }

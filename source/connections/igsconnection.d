@@ -36,15 +36,6 @@ class IGSConnection : ConnectionBase
         socket = _conn;
         mh = new  IGSMessageHandler(this);
         curThread = 1; //TODO: Fix this
-
-        socket.write(import("motd.txt"));
-        socket.write("\r\n");
-        socket.write("Login: ");
-        string username = cast(string)socket.readLine();
-        socket.write("Password: ");
-        string password = cast(string)socket.readLine();
-
-        userinfo = new UserInfo(username, password);
     }
 
     void readLoop()
@@ -98,8 +89,23 @@ class IGSConnection : ConnectionBase
     
     void spawn()
     {
+        //Print MOTD
+        socket.write(import("motd.txt"));
+        socket.write("\r\n");
+        
+        //Authenticate user:
+        socket.write("Login: ");
+        string username = cast(string)socket.readLine();
+        socket.write("Password: ");
+        string password = cast(string)socket.readLine();
+
+        //Spawn readers and writers
         writeTask = runTask(&writeLoop);
         readTask = runTask(&readLoop);
+
+        //Process info -- needs to be done after spawning reader and writer.
+        auto msg = new AuthMessage(username, password);
+        msg.handleMessage(this);
 
         new JoinMessage("Earth").handleMessage(this);
 
