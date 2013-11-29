@@ -10,6 +10,8 @@ interface Rules
     void apply(Position pt, StoneColor color);
 }
 
+import std.stdio;
+
 class AGARules : Rules
 {
     Goban board;
@@ -67,7 +69,6 @@ class AGARules : Rules
      **/
     void apply(Position pt, StoneColor color) {
         doCaptures(pt, color);
-        board.commit();
     }
 
     /***
@@ -83,15 +84,15 @@ class AGARules : Rules
 
         // check for suicide
         //TODO: Check for suicide
-        captures -= this.doCapture(pt, StoneColor.OTHER);
+        captures -= this.doCapture(pt, color, true);
 
         board.addCaptures(color, captures);
     }
 
-    int doCapture(Position pt, StoneColor color) {
+    int doCapture(Position pt, StoneColor color, bool suicide = false) {
         pendingCaptures.length = 0;
         
-        if (findCaptures(pt, color)) {
+        if (findCaptures(pt, color, suicide)) {
             return 0;
         }
 
@@ -103,20 +104,20 @@ class AGARules : Rules
         return cast(int)pendingCaptures.length;
     }
 
-    int findCaptures(Position pt, StoneColor color) {
+    int findCaptures(Position pt, StoneColor color, bool suicide) {
         // out of bounds?
         if (pt.x < 0 || pt.y < 0 || pt.x >= board.size || pt.y >= board.size) {
-            return 0;
-        }
-        
-        // found same color
-        if (board[pt] == color) {
-            return 0;
+            return 0;  //No liberty
         }
 
         // found a liberty
         if (board[pt] == StoneColor.EMPTY) {
             return 1;
+        }
+
+        // found opposite color
+        if ((board[pt] == color && !suicide) || (suicide && board[pt] != color)) {
+            return 0;
         }
 
         //already visited?
@@ -126,19 +127,19 @@ class AGARules : Rules
                 return 0;
             }
         }
-        
+
         pendingCaptures ~= pt;
-        
-        if (this.findCaptures(Position(pt.x-1, pt.y), color)) {
+
+        if (this.findCaptures(Position(pt.x-1, pt.y), color, suicide)) {
             return 1;
         }
-        if (this.findCaptures(Position(pt.x+1, pt.y), color)) {
+        if (this.findCaptures(Position(pt.x+1, pt.y), color, suicide)) {
             return 1;
         }
-        if (this.findCaptures(Position(pt.x, pt.y-1), color)) {
+        if (this.findCaptures(Position(pt.x, pt.y-1), color, suicide)) {
             return 1;
         }
-        if (this.findCaptures(Position(pt.x+1, pt.y), color)) {
+        if (this.findCaptures(Position(pt.x, pt.y+1), color, suicide)) {
             return 1;
         }
 

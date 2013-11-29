@@ -3,8 +3,9 @@ module goban.goban;
 import goban.rules;
 import goban.position;
 import goban.colors;
-import std.container ;
-
+import std.container : Array;
+import std.array : Appender;
+import std.conv:to;
 interface Goban
 {
     void revert();
@@ -15,7 +16,7 @@ interface Goban
 
     bool compareBoard(BoardState);
 
-    @property int size();
+    @property int size() const;
 
     void addCaptures(StoneColor, int captures);
 
@@ -52,7 +53,7 @@ class GobanImpl(rulesType : Rules) : Goban
      * Create a new board.  Requires a board size.  Only square boards are supposed.
      */
     this(int size = 19)
-    in
+        in
     {
         enforce(size < 36, "Invalid board size");
     }
@@ -62,7 +63,7 @@ class GobanImpl(rulesType : Rules) : Goban
         this.rules = new rulesType(this);
     }
 
-     /***
+    /***
      * Revert to a previous state.
      */
     void revert() {
@@ -75,7 +76,7 @@ class GobanImpl(rulesType : Rules) : Goban
         }
     }
 
-    @property int size()
+    @property int size() const
     {
         return _size;
     }
@@ -114,7 +115,8 @@ class GobanImpl(rulesType : Rules) : Goban
         if( rules.check( pos, color))
         {
             this[pos] = color;
-            rules.apply( pos, color);
+            rules.apply( pos, color); //Commits board at end.
+            commit();
 
             return true;
         }
@@ -131,6 +133,60 @@ class GobanImpl(rulesType : Rules) : Goban
     {
         state.captures[color] += captures;
     }
+
+    override string toString() const
+    {
+        Appender!string output;
+
+        foreach( i, stone; state.stones )
+        {
+            if( i%size == 0 && i != 0)
+            {
+                output.put("\n");
+            }
+            switch(stone)
+            {
+                case StoneColor.EMPTY:
+                    output.put(".");
+                    break;
+                case StoneColor.WHITE:
+                    output.put("O");
+                    break;
+                case StoneColor.BLACK:
+                    output.put("X");
+                    break;
+                default:
+                    output.put(to!string(cast(int)stone));
+                    break;
+            }
+        }
+
+        return output.data;
+    }
 }
 
-//TODO: write unittest!
+unittest
+{
+    import std.stdio;
+    auto board = new GobanImpl!(AGARules)();
+
+    //Check suicide
+    board.playStone(Position(1,0), StoneColor.WHITE);
+    assert(board[Position(1,0)] == StoneColor.WHITE, "Didn't get back same stone color!");
+    board.playStone(Position(0,1), StoneColor.WHITE);
+    assert(board.playStone(Position(0,0), StoneColor.BLACK) == false, "Allowed black to suicide");
+
+    board.playStone(Position(2,0), StoneColor.BLACK);
+    board.playStone(Position(1,1), StoneColor.BLACK);
+    board.playStone(Position(0,0), StoneColor.BLACK);
+
+    assert(board.playStone(Position(1,0), StoneColor.WHITE) == false, "Allowed white to take ko early.");
+
+    board.playStone(Position(18,18), StoneColor.WHITE);
+    board.playStone(Position(17,18), StoneColor.BLACK);
+
+    assert(board.playStone(Position(1,0), StoneColor.WHITE) == true, "Did not allow white to take ko.");
+
+
+    writeln(board.toString());
+}
