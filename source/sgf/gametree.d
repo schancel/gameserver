@@ -72,7 +72,7 @@ class GameNode
         return 0;
     }
 
-    string toSgf(int depth = 2)
+    string toSgf(int depth = 2) const
     {
         auto str = appender!(string);
         
@@ -83,13 +83,16 @@ class GameNode
         foreach( key, arr; Properties )
         {
             str.put(key);
-            str.put("[");
-            str.put(arr.join("]["));
-            str.put("]");
+            foreach(value; arr)
+            {
+                str.put("[");
+                str.put(value);
+                str.put("]");
+            }
         }
         
         if( depth > 0 )
-            foreach( GameNode child; Children)
+            foreach( child; Children)
         { 
             if( this.Children.length > 1 ) str.put('(');
             str.put( child.toSgf(depth-1) );

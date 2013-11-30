@@ -20,8 +20,9 @@ import channels;
 import user.userinfo;
 import util.stringutils;
 import messages;
+import util.igs;
 
-const prompt = "1 5";
+const prompt = "1";
 /****************************************************************************************
 
  *****************************************************************************************/
@@ -30,13 +31,13 @@ class IGSConnection : ConnectionBase
     private TCPConnection socket;
     private IGSCommahdHandler ch;
     GoChannel currentGame;
+    uint state = 5;
 
     this(TCPConnection _conn)
     {
         super();
         socket = _conn;
         ch = new  IGSCommahdHandler(this);
-        curThread = 1; //TODO: Fix this
     }
 
     void readLoop()
@@ -47,7 +48,7 @@ class IGSConnection : ConnectionBase
             while(socket.connected && active)
             {
                 
-                send(prompt);
+                send(prompt ~ " "~ state.to!string);
                 auto msg = cast(string)socket.readLine();
                 try {
                     ch.handleInput( msg );
@@ -78,7 +79,7 @@ class IGSConnection : ConnectionBase
                 }, //Send raw messages to the client.
                 (string m) {
                     socket.write(m);
-                    socket.write("\r\t\n");
+                    socket.write("\r\n");
                 });
             }
         }
@@ -138,7 +139,7 @@ class IGSCommahdHandler
             /*
              Abuse compile-time-reflections to delegate out 
              */
-            foreach(memberFunc; __traits(allMembers, typeof(this)) )
+            /+static+/ foreach(memberFunc; __traits(allMembers, typeof(this)) )
             {
                 static if ( memberFunc.startsWith("cmd") )
                 {
@@ -147,10 +148,15 @@ class IGSCommahdHandler
                     ArgTypes args;
                     foreach(i, arg; ArgTypes)
                     {
+                        string argInput;
+
                         if(i+1 == ArgTypes.length)
-                            args[i] = to!arg(msg.readAll());
+                            argInput = msg.readAll();
                         else
-                            args[i] = to!arg(msg.readArg());
+                            argInput = msg.readArg();
+
+                        if(argInput.length) //Don't try to convert if argument is not specified.
+                            args[i] = to!arg(argInput);
                     }
                     MemberFunctionsTuple!(typeof(this), memberFunc)[0](args);
                     goto end;
@@ -168,7 +174,14 @@ class IGSCommahdHandler
     {
         //TODO: IGS moves are simply played in the format "A1", etc.  Need to process them here.
         //Move format does not include the letter "i".  What a pain in the ass.
-        return false;
+        if( cmd.length > 1 && cmd.length <= 3 && ci.currentGame)
+        {
+            string sgfPos = cmd.toLower().igsToSgf();
+            new PlayMoveMessage(ci.currentGame.name, sgfPos).handleMessage(ci);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     void cmdSay(string message)
@@ -191,9 +204,21 @@ class IGSCommahdHandler
         //TODO: implement setting handicap.
     }
 
+    void cmdPrintGame()
+    {
+        ci.send(ci.currentGame.rawBoard().toString());
+        ci.send(ci.currentGame.sgfData.toSgf());
+    }
+
     void cmdMatch(string opponent, string myColor /+B/W+/, int size, int time, int byoyomitime)
     {
+        import goban.colors;
         //TODO: Implement match command.
+        ci.currentGame = new GoChannel(ci);
+        ci.currentGame.readyPlayer(ci);
+        ci.currentGame.startGame();
+
+        ci.state = 6;
     }
     
     void cmdJoin(string channel) {

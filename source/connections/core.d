@@ -49,6 +49,7 @@ class ConnectionBase : Connection
     this()
     {
         active = true;
+        curThread = Task.getThis().toHash(); //TODO: Fix this
     }
 
     ~this()

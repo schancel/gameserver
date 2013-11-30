@@ -15,7 +15,7 @@ import std.exception;
 class ChatChannel : Channel
 {
 
-    protected this() {}
+    package this() {}
 
     this(string channelName)
     {

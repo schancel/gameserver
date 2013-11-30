@@ -34,7 +34,6 @@ class WSConnection : ConnectionBase
         super();
         socket = _conn;
         userinfo = new UserInfo();
-        curThread = socket.toHash();
     }
 
     void readLoop()

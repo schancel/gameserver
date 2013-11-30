@@ -21,6 +21,8 @@ interface Goban
     void addCaptures(StoneColor, int captures);
 
     @property Array!(BoardState) previousStates();
+
+    string toString() const;
 }
 
 struct BoardState

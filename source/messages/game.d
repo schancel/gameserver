@@ -32,9 +32,9 @@ class NewGameMessage : Message
 
     override void handleMessage(Connection ci)
     {
-        auto gogame = new GoChannel([ci], colors);
+        auto gogame = new GoChannel(ci, colors);
 
-        game = gogame.gameUUID;
+        game = gogame.name;
         gogame.pushSgfData(sgfData);
 
         gogame.subscribe(ci);

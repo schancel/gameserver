@@ -42,11 +42,8 @@ class AuthMessage : Message
     
     override void handleMessage(Connection ci)
     {
-        writeln("What2");
-
         auto oldName = ci.userinfo ? ci.userinfo.Username : "(null)"; //Overwrite whatever nonsense the client might have sent with the correct name.
 
-        writeln("Hrm");
         if( Database.AuthUser(username, password) )
         {
             ci.userinfo = new UserInfo(username);

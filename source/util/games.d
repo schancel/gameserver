@@ -41,10 +41,10 @@ void registerGame(GoChannel chan)
     synchronized(gameMutex) 
     {
         enforce(chan.gameID !in gamesByID, "Game already exists?  How is this possible?");
-        enforce(chan.gameUUID !in games, "Game already exists?  How is this possible?");
+        enforce(chan.name !in games, "Game already exists?  How is this possible?");
 
         gamesByID[chan.gameID] = chan;
-        games[chan.gameUUID] = chan;
+        games[chan.name] = chan;
     }
 }
 
@@ -58,8 +58,8 @@ void unregisterGame(GoChannel chan)
             enforce(false, "No such game.");
         }
 
-        if( auto p = chan.gameUUID in games ) {
-            games.remove(chan.gameUUID);
+        if( auto p = chan.name in games ) {
+            games.remove(chan.name);
         } else {
             enforce(false, "No such game.");
         }
