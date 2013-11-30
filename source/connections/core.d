@@ -33,6 +33,8 @@ abstract class Connection
 
     Connection add(Connection rhs) {assert(0, "Not implemented");}
     Connection remove(Connection rhs) {assert(0, "Not implemented");}
+
+    void quit();
 }
 
 class ConnectionBase : Connection
@@ -55,7 +57,7 @@ class ConnectionBase : Connection
     ~this()
     {
         logDebug("%d: disconnected", curThread);
-        foreach( sub; subscriptions.byKey() )
+        foreach( sub; subscriptions.dup.byKey() ) //Dup is necessary, since unsubscribing removes from the AA.
         {
             sub.unsubscribe(this);
         }
@@ -118,5 +120,10 @@ class ConnectionBase : Connection
     override Connection remove(Connection rhs)
     {
         return null;
+    }
+
+    override void quit()
+    {
+        active = false;
     }
 }

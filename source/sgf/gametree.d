@@ -72,13 +72,14 @@ class GameNode
         return 0;
     }
 
-    string toSgf(int depth = 2) const
+    string toSgf(int depth = int.max) const
     {
         auto str = appender!(string);
-        
-        str.put(";_id[");
+
+        str.put(";");
+        /+str.put(";_id[");
         str.put(to!string(this.NodeID));
-        str.put("]");
+        str.put("]");+/
 
         foreach( key, arr; Properties )
         {

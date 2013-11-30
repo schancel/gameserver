@@ -138,6 +138,33 @@ class GobanImpl(rulesType : Rules) : Goban
 
     override string toString() const
     {
+
+        /+  TODO: Output something like this:
+         + 
+         + 
+         +  15 Game 87 (I): eluusive [ 6k ] vs mewph [10k ]
+         +  15       A B C D E F G H J K L M N O P Q R S T      H-cap 4 Komi -5.5
+         +   15   19 |. . . . . . . . . . . . . . . . . . .| 19  Captured by #: 4
+         +   15   18 |. . . . . . . . . . . . . . . . . . .| 18  Captured by O: 0
+         +   15   17 |. . . . . . . . . . . . . . . . . . .| 17
+         +   15   16 |. . . # . . . . . + . . . . . # . . .| 16  Wh Time 71:39 
+         +   15   15 |. . . . . . . . . . . . . . . . . . .| 15  Bl Time 72:04 
+         +   15   14 |. . . . . . . . . . . . . . . . . . .| 14
+         +   15   13 |. . . . . . . . . . . . . . . . . . .| 13   Last Move: D3
+         +   15   12 |. . . . . . . . . . . . . . . . . . .| 12    #12 O (White)
+         +   15   11 |. . . . . . . . . . . . . . . . . . .| 11
+         +   15   10 |. . . + . . . . . + . . . . . + . . .| 10     B # 11 D1
+         +   15    9 |. . . . . . . . . . . . . . . . . . .|  9     W # 10 C1
+         +   15    8 |. . . . . . . . . . . . . . . . . . .|  8     B #  9 C2
+         +   15    7 |. . . . . . . . . . . . . . . . . . .|  7     W #  8 C3
+         +   15    6 |. . . . . . . . . . . . . . . . . . .|  6     B #  7 B3
+         +   15    5 |. . . . . . . . . . . . . . . . . . .|  5     W #  6 B2
+         +   15    4 |. . . # . . . . . + . . . . . # . . .|  4     B #  5 A3
+         +   15    3>|# # O>O<. . . . . . . . . . . . . . .|< 3     W #  4 B1
+         +   15    2 |# . # . . . . . . . . . . . . . . . .|  2     B #  3 A2
+         +   15    1 |. . . # . . . . . . . . . . . . . . .|  1     W #  2 A1
+         +   9       A B C D E F G H J K L M N O P Q R S T +/
+
         Appender!string output;
 
         foreach( i, stone; state.stones )
@@ -149,13 +176,13 @@ class GobanImpl(rulesType : Rules) : Goban
             switch(stone)
             {
                 case StoneColor.EMPTY:
-                    output.put(".");
+                    output.put(" . ");
                     break;
                 case StoneColor.WHITE:
-                    output.put("O");
+                    output.put(" O ");
                     break;
                 case StoneColor.BLACK:
-                    output.put("X");
+                    output.put(" # ");
                     break;
                 default:
                     output.put(to!string(cast(int)stone));

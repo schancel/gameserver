@@ -115,19 +115,17 @@ class GoChannel : ChatChannel  //GoChannels are also chat channels.
     {
         enforce(started, "Game not started!");
 
-        writeln(__FILE__, __LINE__);
-
-        writeln(__FILE__, __LINE__);
 
         if(player == players[curPlayer].conn && move.position)
         {
             Position pos = Position(move.position);
-            writeln(__FILE__, __LINE__);
 
             if( board.playStone(pos, curColor) )
             {
                 curNode = curNode.appendChild();
                 curNode.pushProperty( curColor.getColorString(), move.position );
+
+                //Cycle through players
                 curPlayer = (curPlayer++) % cast(int)players.length;
 
                 //Cycle through colors.

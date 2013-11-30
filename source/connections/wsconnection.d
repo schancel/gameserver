@@ -91,7 +91,10 @@ class WSConnection : ConnectionBase
         readTask = runTask(&readLoop);
 
         readTask.join();
-        active = false;
-        writeTask.interrupt();
+
+        if( writeTask.running() ) 
+            writeTask.interrupt();
+
+        socket.close();
     }
 }

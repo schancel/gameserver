@@ -51,6 +51,15 @@ class ConnectionSet : Connection
         }
     }
 
+    ///Support booting all a persons connections off.
+    override void quit()
+    {   
+        foreach( conn; connections.byKey())
+        {
+            conn.quit();
+        }
+    }
+
     override void subscribe(Channel chan)
     {
         enforce(0, "Cannot subscribe through a connection set.  Check your code");

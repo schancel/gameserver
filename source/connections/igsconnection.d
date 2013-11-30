@@ -22,22 +22,23 @@ import util.stringutils;
 import messages;
 import util.igs;
 
-const prompt = "1";
+import connections.igscodes;
+
 /****************************************************************************************
 
  *****************************************************************************************/
 class IGSConnection : ConnectionBase
 { 
     private TCPConnection socket;
-    private IGSCommahdHandler ch;
+    private IGSCommandHandler ch;
     GoChannel currentGame;
-    uint state = 5;
+    IGS_States state = IGS_States.WAITING;
 
     this(TCPConnection _conn)
     {
         super();
         socket = _conn;
-        ch = new  IGSCommahdHandler(this);
+        ch = new IGSCommandHandler(this);
     }
 
     void readLoop()
@@ -48,13 +49,13 @@ class IGSConnection : ConnectionBase
             while(socket.connected && active)
             {
                 
-                send(prompt ~ " "~ state.to!string);
+                prompt(state);
                 auto msg = cast(string)socket.readLine();
                 try {
                     ch.handleInput( msg );
                 } catch( Exception e)
                 {
-                    send("5 " ~ e.msg);
+                    send(IGS_CODES.ERROR, e.msg);
                 }
             }
         } catch( Exception e ) {
@@ -76,9 +77,21 @@ class IGSConnection : ConnectionBase
                         m.writeIGS(socket);
                         socket.write("\r\n");
                     }
-                }, //Send raw messages to the client.
-                (string m) {
-                    socket.write(m);
+                },
+                //Send raw messages to the client.
+                (IGS_CODES code, string m) {
+                    foreach( line; m.splitLines())
+                    {
+                        socket.write((cast(int)code).to!string);
+                        socket.write(" ");
+                        socket.write(line);
+                        socket.write("\r\n");
+                    }
+                },
+                (IGS_States state) {
+                    socket.write((cast(int)IGS_CODES.PROMPT).to!string);
+                    socket.write(" ");
+                    socket.write((cast(int)state).to!string);
                     socket.write("\r\n");
                 });
             }
@@ -112,18 +125,28 @@ class IGSConnection : ConnectionBase
         new JoinMessage("Earth").handleMessage(this);
 
         readTask.join();
-        active = false;
-        writeTask.interrupt();
+
+        if( writeTask.running() )
+            writeTask.interrupt();
+       
+        socket.close();
     }
 
-    void send( string m )
+    void send( IGS_CODES code, string m )
     {
-        writeTask.send(m);
+        writeTask.send(code, m);
+    }
+
+    void prompt( IGS_States code )
+    {
+        writeTask.send(code);
     }
 }
 
-class IGSCommahdHandler
+class IGSCommandHandler
 {
+    struct CmdAlias { string otherName; }
+
     private IGSConnection ci;
     
     this(IGSConnection _ci)
@@ -134,6 +157,7 @@ class IGSCommahdHandler
     void handleInput(string msg)
     {
         string cmd = msg.readArg();
+
         switch( cmd.toUpper() )
         {
             /*
@@ -143,8 +167,19 @@ class IGSCommahdHandler
             {
                 static if ( memberFunc.startsWith("cmd") )
                 {
+                    alias memberIdentifer = MemberFunctionsTuple!(typeof(this), memberFunc)[0];
+
+                    //Support command aliases.
+                    /+static+/ foreach(a; __traits(getAttributes, memberIdentifer)) {
+                        static if( is( typeof(a) == CmdAlias ))
+                        {
+                            case a.otherName.toUpper():
+                        }
+                    }
+
                     case memberFunc[3..$].toUpper():
-                    alias ParameterTypeTuple!(MemberFunctionsTuple!(typeof(this), memberFunc)) ArgTypes;
+
+                    alias ParameterTypeTuple!(memberIdentifer) ArgTypes;
                     ArgTypes args;
                     foreach(i, arg; ArgTypes)
                     {
@@ -158,10 +193,14 @@ class IGSCommahdHandler
                         if(argInput.length) //Don't try to convert if argument is not specified.
                             args[i] = to!arg(argInput);
                     }
-                    MemberFunctionsTuple!(typeof(this), memberFunc)[0](args);
+                    memberIdentifer(args);
                     goto end;
+
+                    
                 }
             }
+
+            
             default:
                 enforce(ProcessContextualCommand(cmd, msg), cmd~": Unknown command.");
                 break;
@@ -204,10 +243,16 @@ class IGSCommahdHandler
         //TODO: implement setting handicap.
     }
 
+    @CmdAlias("exit") @CmdAlias("logout")
+    void cmdQuit()
+    {
+        ci.quit();
+    }
+
     void cmdPrintGame()
     {
-        ci.send(ci.currentGame.rawBoard().toString());
-        ci.send(ci.currentGame.sgfData.toSgf());
+        ci.send(IGS_CODES.FILE, ci.currentGame.rawBoard().toString());
+        ci.send(IGS_CODES.FILE, ci.currentGame.sgfData.toSgf());
     }
 
     void cmdMatch(string opponent, string myColor /+B/W+/, int size, int time, int byoyomitime)
@@ -218,7 +263,7 @@ class IGSCommahdHandler
         ci.currentGame.readyPlayer(ci);
         ci.currentGame.startGame();
 
-        ci.state = 6;
+        ci.state = IGS_States.PLAYING_GO;
     }
     
     void cmdJoin(string channel) {
@@ -244,7 +289,8 @@ class IGSCommahdHandler
     {
         new PrivateMessage(who, message).handleMessage(ci);
     }
-
+    
+    @CmdAlias("w")
     void cmdWho(string channel)
     {
         new WhoMessage(channel == "" ? "Earth" : channel).handleMessage(ci);
@@ -252,13 +298,13 @@ class IGSCommahdHandler
 
     void cmdGames()
     {
-        ci.send("7 [##]  white name [ rk ]      black name [ rk ] (Move size H Komi BY FR) (###)");
+        ci.send(IGS_CODES.GAMES, "[##]  white name [ rk ]      black name [ rk ] (Move size H Komi BY FR) (###)");
     }
 
     //Are you there?
     void cmdAYT()
     {
-        ci.send("9 yes");
+        ci.send(IGS_CODES.INFO, "yes");
     }
 
     void cmdToggle(string variable, string status)
@@ -277,6 +323,6 @@ class IGSCommahdHandler
         }
         ci.prefs[variable] = val;
 
-        ci.send("9 Set "~variable ~" to be " ~ to!string(val) ~".");
+        ci.send(IGS_CODES.INFO, "Set "~variable ~" to be " ~ to!string(val) ~".");
     }
 }

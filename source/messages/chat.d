@@ -40,7 +40,9 @@ class ChatMessage : Message
     override bool supportsIGS() { return true; };
     override void writeIGS(OutputStream st)
     {
-        st.put( "9 !");
+
+        st.put((cast(int)IGS_CODES.SHOUT).to!string);
+        st.put( " !");
         st.put(who);
         st.put("!: <");
         st.put(channel );
@@ -78,14 +80,16 @@ class PrivateMessage : Message
             sendToUser(target, this);
         } catch (Exception e)
         {
-            writefln("TODO: Implement notifying user of offline target");
+            //TODO: Queue up messages in database.
+            enforce(false, "User is offline, or doesn't exist.");
         }
     }
     
     override bool supportsIGS() { return true; };
     override void writeIGS(OutputStream st)
     {
-        st.put( "24 *");
+        st.put( (cast(int)IGS_CODES.TELL).to!string );
+        st.put(" *");
         st.put(who);
         st.put("* ");
         st.put(message);
