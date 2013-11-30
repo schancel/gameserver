@@ -28,13 +28,14 @@ const prompt = "1 5";
 class IGSConnection : ConnectionBase
 { 
     private TCPConnection socket;
-    private IGSMessageHandler mh;
+    private IGSCommahdHandler ch;
+    GoChannel currentGame;
 
     this(TCPConnection _conn)
     {
         super();
         socket = _conn;
-        mh = new  IGSMessageHandler(this);
+        ch = new  IGSCommahdHandler(this);
         curThread = 1; //TODO: Fix this
     }
 
@@ -49,7 +50,7 @@ class IGSConnection : ConnectionBase
                 send(prompt);
                 auto msg = cast(string)socket.readLine();
                 try {
-                    mh.handleInput( msg );
+                    ch.handleInput( msg );
                 } catch( Exception e)
                 {
                     send("5 " ~ e.msg);
@@ -120,7 +121,7 @@ class IGSConnection : ConnectionBase
     }
 }
 
-class IGSMessageHandler
+class IGSCommahdHandler
 {
     private IGSConnection ci;
     
@@ -137,12 +138,12 @@ class IGSMessageHandler
             /*
              Abuse compile-time-reflections to delegate out 
              */
-            foreach(memberFunc; __traits(allMembers, IGSMessageHandler) )
+            foreach(memberFunc; __traits(allMembers, typeof(this)) )
             {
                 static if ( memberFunc.startsWith("cmd") )
                 {
                     case memberFunc[3..$].toUpper():
-                    alias ParameterTypeTuple!(MemberFunctionsTuple!(IGSMessageHandler, memberFunc)) ArgTypes;
+                    alias ParameterTypeTuple!(MemberFunctionsTuple!(typeof(this), memberFunc)) ArgTypes;
                     ArgTypes args;
                     foreach(i, arg; ArgTypes)
                     {
@@ -151,16 +152,48 @@ class IGSMessageHandler
                         else
                             args[i] = to!arg(msg.readArg());
                     }
-                    MemberFunctionsTuple!(IGSMessageHandler, memberFunc)[0](args);
+                    MemberFunctionsTuple!(typeof(this), memberFunc)[0](args);
                     goto end;
                 }
             }
             default:
-                enforce(false, cmd~": Unknown command.");
+                enforce(ProcessContextualCommand(cmd, msg), cmd~": Unknown command.");
                 break;
         }
     end:
         return;
+    }
+
+    bool ProcessContextualCommand(string cmd, string msg)
+    {
+        //TODO: IGS moves are simply played in the format "A1", etc.  Need to process them here.
+        //Move format does not include the letter "i".  What a pain in the ass.
+        return false;
+    }
+
+    void cmdSay(string message)
+    {
+        //TODO: implement talking in games.
+    }
+
+    void cmdKibitz(string message)
+    {
+        //TODO: implement talking in games.
+    }
+
+    void cmdFree()
+    {
+        //TODO: implement switching to free game.
+    }
+
+    void cmdHandicap(int stones)
+    {
+        //TODO: implement setting handicap.
+    }
+
+    void cmdMatch(string opponent, string myColor /+B/W+/, int size, int time, int byoyomitime)
+    {
+        //TODO: Implement match command.
     }
     
     void cmdJoin(string channel) {
