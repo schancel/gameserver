@@ -8,6 +8,7 @@ import vibe.core.log;
 const Json defaults;
 
 const string defaultConfig = `{
+    "domainName": "sujigo.com",
     "mySQLHostname": "localhost",
     "mySQLDatabase": "sujigo",
     "mySQLUsername": "sujigo",

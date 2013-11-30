@@ -34,7 +34,7 @@ class JoinMessage : Message
         who = ci.userinfo.Username; //Overwrite whatever nonsense the client might have sent with the correct name.
 
         logDebug("%s: Joined channel %s", who, channel);
-        subscribeToChannel!(ChatChannel)( ci, channel );
+        subscribeToChannel( ci, channel );
         sendToChannel(channel, this);
     }
     
@@ -103,7 +103,7 @@ class WhoListMessage : Message
 
     override void handleMessage(Connection ci)
     {
-        foreach(curCi; getChannel!(ChatChannel)(channel).subscriptions.byKey())
+        foreach(curCi; getChannel(channel).subscriptions.byKey())
             whoList ~= curCi.userinfo.Username;
 
         ci.send(this);

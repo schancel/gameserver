@@ -14,6 +14,9 @@ import std.exception;
 
 class ChatChannel : Channel
 {
+
+    protected this() {}
+
     this(string channelName)
     {
         super(channelName);

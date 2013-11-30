@@ -1,18 +1,22 @@
 module channels.gochannel;
 
+
+import vibe.core.log;
+
+import std.algorithm;
 import std.uuid; //For giving the game a UUID
 
 import channels.core;
 import channels.chatchannel;
 import messages;
 import goban;
+import util.games;
 
 import connections;
 import sgf.gametree;
 import sgf.parser;
 import std.exception;
 
-import std.algorithm;
 
 const auto colorProperties = ["B", "W", "R", "G", "V"];
 
@@ -24,29 +28,55 @@ struct PlayerInfo
     bool ready;
 }
 
-
 ///Specialized channel for validating moves.
 ///Should support multi-color go.
 class GoChannel : ChatChannel  //GoChannels are also chat channels.
 {
+    static shared uint gameIDCounter = 0;
+
+    immutable string gameUUID;
+    immutable int gameID;
+
     PlayerInfo[string] players;
     int curPlayer = 0;
     int colors;
-    GameNode head;
-    GameNode curNode;
-    Goban board;
-    bool started;
 
-    this(string gamename)
+    private GameNode head;
+    private GameNode curNode;
+    private Goban board;
+
+    bool started;
+    bool freeGame;
+
+    package this()
     {
-        super(gamename);
-        board = new GobanImpl!(AGARules);
+        gameID = ++gameIDCounter;
+        gameUUID = randomUUID().toString;
+        registerGame(this);
+
+        super(gameUUID);
         colors = 2;
     }
 
-    this(string gamename, Connection[] players, int colors = 2)
+    package this(string gameName)
     {
-        super(gamename);
+        enforce(false, "Cannot call with a gamename!");
+        this();
+    }
+
+    ~this()
+    {
+        logDebug("Unregistering game!");
+        unregisterGame(this);
+    }
+
+    this(Connection[] players, int colors = 2)
+    {
+        this();
+        board = new GobanImpl!(AGARules);
+        this.colors = colors;
+
+
         foreach(i, ci; players)
         {
             this.players[ci.userinfo.Username] = PlayerInfo(ci, StoneColor.EMPTY, i, false);
@@ -117,6 +147,11 @@ class GoChannel : ChatChannel  //GoChannels are also chat channels.
                 }
             }
         }
+    }
+
+    void setPlayerColor(string player, StoneColor color)
+    {
+        players[player].color = color;
     }
 
     void removePlayer(string username)

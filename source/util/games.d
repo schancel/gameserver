@@ -1,8 +1,11 @@
-module util.igs;
+module util.games;
 
 import channels.gochannel;
+import std.exception :enforce;
 
-private __gshared GoChannel[int] games;
+private __gshared GoChannel[int] gamesByID;
+private __gshared GoChannel[string] games;
+
 private __gshared Object gameMutex = new Object();
 
 ///Get a channel of a particular type, if possible.  Possibly throws invalidcastexception.
@@ -10,29 +13,53 @@ GoChannel getGameByID(int id)
 {
     synchronized(gameMutex) 
     {
-        if( auto p = channelName.toUpper() in channels ) {
+        if( auto p = id in gamesByID ) {
             return *p;
         }  else {
             enforce(false, "No such game.");
         }
     }
+
+    assert(0, "Shouldn't be here");
 }
 
-void registerGame(GoChannel chan, int id)
+GoChannel getGame(string game)
 {
-    synchronized(chanMutex) 
+    synchronized(gameMutex) 
     {
-        enforce(id !in channels, "Game already exists?  How is this possible?");
-        games[id] = chan;
+        if( auto p = game in games ) {
+            return *p;
+        }  else {
+            enforce(false, "No such game.");
+        }
+    }
+    assert(0, "Shouldn't be here");
+}
+
+void registerGame(GoChannel chan)
+{
+    synchronized(gameMutex) 
+    {
+        enforce(chan.gameID !in gamesByID, "Game already exists?  How is this possible?");
+        enforce(chan.gameUUID !in games, "Game already exists?  How is this possible?");
+
+        gamesByID[chan.gameID] = chan;
+        games[chan.gameUUID] = chan;
     }
 }
 
-void unregisterGame(GoChannel chan, int id)
+void unregisterGame(GoChannel chan)
 {
-    synchronized(chanMutex) 
+    synchronized(gameMutex) 
     {
-        if( auto p = id in channels ) {
-            games.remove(id);
+        if( auto p = chan.gameID in gamesByID ) {
+            gamesByID.remove(chan.gameID);
+        } else {
+            enforce(false, "No such game.");
+        }
+
+        if( auto p = chan.gameUUID in games ) {
+            games.remove(chan.gameUUID);
         } else {
             enforce(false, "No such game.");
         }

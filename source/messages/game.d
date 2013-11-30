@@ -10,10 +10,9 @@ import vibe.core.stream;
 
 import user.userinfo;
 import channels;
+import util.games;
 
 import messages.core;
-
-shared uint gameID = 0;
 
 @OpCoder(100)
 class NewGameMessage : Message
@@ -28,19 +27,18 @@ class NewGameMessage : Message
     
     this(string game, string sgfData)
     {
-        this.game = game;
         this.sgfData = sgfData;
     }
 
     override void handleMessage(Connection ci)
     {
-        gameID++;
-        this.game = gameID.to!string; 
+        auto gogame = new GoChannel([ci], colors);
 
-        auto gogame = new GoChannel(game, [ci], colors);
+        game = gogame.gameUUID;
         gogame.pushSgfData(sgfData);
 
-        subscribeToChannel!(GoChannel)(ci, game);
+        gogame.subscribe(ci);
+        ci.subscribe(gogame);
     }
     
     mixin messages.MessageMixin!("sgfData");
@@ -54,7 +52,7 @@ class AddPlayerMessage : Message
     
     override void handleMessage(Connection ci)
     {   
-        auto gogame = getChannel!(GoChannel)(game);
+        auto gogame = getGame(game);
     }
     
     mixin messages.MessageMixin!("game");
@@ -68,8 +66,7 @@ class RemovePlayerMessage : Message
     
     override void handleMessage(Connection ci)
     {   
-        auto gogame = getChannel!(GoChannel)(game);
-       
+        auto gogame = getGame(game);
     }
     
     mixin messages.MessageMixin!("game");
@@ -83,7 +80,7 @@ class ReadyMessage : Message
 
     override void handleMessage(Connection ci)
     {   
-        auto gogame = getChannel!(GoChannel)(game);
+        auto gogame = getGame(game);
 
         gogame.readyPlayer(ci);
     }
@@ -109,7 +106,7 @@ class PlayMoveMessage : Message
 
     override void handleMessage(Connection ci)
     {
-        auto gogame = getChannel!(GoChannel)(game);
+        auto gogame = getGame(game);
 
         gogame.playMove(ci, this);
     }

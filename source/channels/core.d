@@ -16,27 +16,29 @@ private __gshared Channel[string] channels;
 private __gshared Object chanMutex = new Object();
 
 ///Get a channel of a particular type, if possible.  Possibly throws invalidcastexception.
-T getChannel(T)(string channelName) if( is( T : Channel ) )
+Channel getChannel(string channelName)
 {
     synchronized(chanMutex) 
     {
         if( auto p = channelName.toUpper() in channels )  
         {
-            return cast(T)(*p);
+            return (*p);
         } 
         else
         {
-            return new T( channelName.toUpper() ); //Channel adds itself to the list of channels.
+            import channels.chatchannel;
+            //Channel adds itself to the list of channels
+            //Default to a ChatChannel if not found.
+            return new ChatChannel( channelName.toUpper() );
         }
     } 
 }
 
 ///Subscribe to a channel of a particular type.  
-void subscribeToChannel(T)(Connection ci, string channelName) if( is( T : Channel ) )
+void subscribeToChannel(Connection ci, string channelName)
 {
-    Channel chan = getChannel!(T)(channelName);
+    Channel chan = getChannel(channelName);
     chan.subscribe(ci);
-    ci.subscribe(chan);
 }
 
 ///Unsubscribe from a channel by name.   Any type of channel will work, since we're not instantiating the channel if it doesn't exist.
@@ -45,7 +47,6 @@ void unsubscribeToChannel(Connection conn, string channelName)
     if( auto chan = channelName.toUpper() in channels )  
     {
         (*chan).unsubscribe(conn);
-        (conn).unsubscribe(*chan);
     }
 }
 
@@ -70,7 +71,7 @@ abstract class Channel
     private Task observer; //Observes the channel and forwards messages to clients.
     bool[Connection] subscriptions;
 
-    private this()
+    package this()
     {
     }
 
@@ -126,10 +127,12 @@ abstract class Channel
     
     void subscribe(Connection conn) {
         subscriptions[conn] = true;
-    };
+        conn.subscribe(this);
+    }
     
     void unsubscribe(Connection conn) {
         subscriptions.remove(conn);
+        conn.unsubscribe(this);
         if( subscriptions.length == 0)
         {
             logDebug("Disposing %s", name);
@@ -137,5 +140,5 @@ abstract class Channel
             active = false;
             observer.interrupt();
         }
-    };
+    }
 }
