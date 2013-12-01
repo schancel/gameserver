@@ -176,13 +176,13 @@ class GobanImpl(rulesType : Rules) : Goban
             switch(stone)
             {
                 case StoneColor.EMPTY:
-                    output.put(" . ");
+                    output.put(" .");
                     break;
                 case StoneColor.WHITE:
-                    output.put(" O ");
+                    output.put(" O");
                     break;
                 case StoneColor.BLACK:
-                    output.put(" # ");
+                    output.put(" #");
                     break;
                 default:
                     output.put(to!string(cast(int)stone));
