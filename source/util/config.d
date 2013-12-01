@@ -12,7 +12,7 @@ static private __gshared Configuration __config;
 
 Configuration Config() {
     if(!__config) //Lazy loading
-        __config = new Configuration(CONFIG_FILE);
+        __config = Configuration.load(CONFIG_FILE);
 
     return __config;
 }
@@ -20,28 +20,27 @@ Configuration Config() {
 class Configuration
 {
     //Configuration properties.
-    @optional string domainName = "sujigo.com";
-    @optional string mySQLHostname = "localhost";
-    @optional string mySQLDatabase = "sujigo";
-    @optional string mySQLUsername = "sujigo";
-    @optional string mySQLPassword = "f00b4r";
+    string domainName = "sujigo.com";
+    string mySQLHostname = "localhost";
+    string mySQLDatabase = "sujigo";
+    string mySQLUsername = "sujigo";
+    string mySQLPassword = "f00b4r";
 
     this() {}
 
-    this(string configFile)
-	{
-        load(configFile);
-    }
 
-	public void load(string configFile = CONFIG_FILE)
+	public static Configuration load(string configFile = CONFIG_FILE)
 	{
         if( exists(CONFIG_FILE) )
         {
             Json jsonConfig = parseJsonString(readText(configFile));
-            deserializeJson(this, jsonConfig);
+            Configuration output;
+            deserializeJson(output, jsonConfig);
             logDebug("Loaded Config");
+            return output;
         } else {
             logDebug("Using default config");
+            return new Configuration();
         }
 	}
 
@@ -57,11 +56,6 @@ class Configuration
 
 unittest
 {
-    assert(Config.mySQLUsername == "sujigo", "Default config file not parsed correctly?");
-}
-
-static this()
-{
-    Config.load();
-    Config.save();
+    static if(0)
+        assert(Config.mySQLPassword == "f00b", "Config not parsed correctly?");
 }
