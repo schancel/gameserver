@@ -73,7 +73,7 @@ void registerChallenge(ChallengeMessage msg)
     }
 }
 
-void registerChallenge(ChallengeMessage msg)
+void unregisterChallenge(ChallengeMessage msg)
 {
     synchronized(challengeMutex) 
     {
