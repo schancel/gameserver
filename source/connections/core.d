@@ -34,7 +34,7 @@ abstract class Connection
     Connection add(Connection rhs) {assert(0, "Not implemented");}
     Connection remove(Connection rhs) {assert(0, "Not implemented");}
 
-    void quit();
+    void quit() {assert(0, "Not implemented");}
 }
 
 class ConnectionBase : Connection

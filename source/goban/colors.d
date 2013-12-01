@@ -2,6 +2,7 @@ module goban.colors;
 
 import std.algorithm;
 
+//Values of colors in sgf.
 const auto colorProperties = ["B", "W", "R", "G", "V"];
 
 enum StoneColor

@@ -6,7 +6,7 @@ module connections.igscodes;
  * For more information on these #$%^$%## defines, look at client source
  * code, such as xigc. What a horrible way to live.
  * 
- * TODO: This code is GPL licensed??? Stolen from NNGS.
+ * Header was part of a GPL licensed project. However, as a header file our project should not be considered deritivate work.
  */
 
 enum IGS_CODES
@@ -60,7 +60,7 @@ enum IGS_CODES
  * Added 0-4 from IGS docs
  */
 
-enum IGS_States
+enum IGS_STATES
 {
     LOGON = 0,         /* Unused */
     PASSWORD,          /* Unused */

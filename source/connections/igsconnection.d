@@ -1,5 +1,7 @@
 module connections.igsconnection;
 
+import util.games;
+
 import std.stdio;
 import core.time;
 import std.conv;
@@ -32,7 +34,7 @@ class IGSConnection : ConnectionBase
     private TCPConnection socket;
     private IGSCommandHandler ch;
     GoChannel currentGame;
-    IGS_States state = IGS_States.WAITING;
+    IGS_STATES state = IGS_STATES.WAITING; //IGS uses this stupid state code...
 
     this(TCPConnection _conn)
     {
@@ -88,7 +90,7 @@ class IGSConnection : ConnectionBase
                         socket.write("\r\n");
                     }
                 },
-                (IGS_States state) {
+                (IGS_STATES state) {
                     socket.write((cast(int)IGS_CODES.PROMPT).to!string);
                     socket.write(" ");
                     socket.write((cast(int)state).to!string);
@@ -128,7 +130,7 @@ class IGSConnection : ConnectionBase
 
         if( writeTask.running() )
             writeTask.interrupt();
-       
+        
         socket.close();
     }
 
@@ -137,7 +139,7 @@ class IGSConnection : ConnectionBase
         writeTask.send(code, m);
     }
 
-    void prompt( IGS_States code )
+    void prompt( IGS_STATES code )
     {
         writeTask.send(code);
     }
@@ -211,12 +213,19 @@ class IGSCommandHandler
 
     bool ProcessContextualCommand(string cmd, string msg)
     {
-        //TODO: IGS moves are simply played in the format "A1", etc.  Need to process them here.
-        //Move format does not include the letter "i".  What a pain in the ass.
         if( cmd.length > 1 && cmd.length <= 3 && ci.currentGame)
         {
+            auto input = msg.readAll(); //Should be nothing, or a game number if the user is playing multiple games.
             string sgfPos = cmd.toLower().igsToSgf();
-            new PlayMoveMessage(ci.currentGame.name, sgfPos).handleMessage(ci);
+
+            if(input.length) {
+                ci.currentGame = getGame( input.to!int ); //Swap to the new game.
+            }
+
+            auto PlayMove = new PlayMoveMessage(ci.currentGame.name, sgfPos);
+
+
+            PlayMove.handleMessage(ci);
             return true;
         } else {
             return false;
@@ -243,7 +252,8 @@ class IGSCommandHandler
         //TODO: implement setting handicap.
     }
 
-    @CmdAlias("exit") @CmdAlias("logout")
+    @CmdAlias("exit") 
+    @CmdAlias("logout")
     void cmdQuit()
     {
         ci.quit();
@@ -255,6 +265,16 @@ class IGSCommandHandler
         ci.send(IGS_CODES.FILE, ci.currentGame.sgfData.toSgf());
     }
 
+    void cmdLoadSgf(string sgfData)
+    {
+        ci.currentGame.pushSgfData(sgfData);
+    }
+
+    void cmdNav(int child)
+    {
+        ci.currentGame.gotoChild(child);
+    }
+
     void cmdMatch(string opponent, string myColor /+B/W+/, int size, int time, int byoyomitime)
     {
         import goban.colors;
@@ -263,11 +283,18 @@ class IGSCommandHandler
         ci.currentGame.readyPlayer(ci);
         ci.currentGame.startGame();
 
-        ci.state = IGS_States.PLAYING_GO;
+        ci.state = IGS_STATES.PLAYING_GO;
     }
-    
+
     void cmdJoin(string channel) {
         new JoinMessage(channel).handleMessage(ci);
+    }
+
+    @CmdAlias(";")
+    void cmdYell(string channel, string message)
+    {
+        //TODO: Implement talking in channels.
+        new ChatMessage(channel, message).handleMessage(ci);
     }
     
     void cmdPart(string channel)
@@ -277,12 +304,20 @@ class IGSCommandHandler
 
     void cmdNick(string newName, string password)
     {
+        //TODO: Disable this?
         new AuthMessage(newName, password).handleMessage(ci);
     }
 
+    //Just sent to Earth -- the default channel.
     void cmdShout(string message)
     {
-        new ChatMessage("Earth", message).handleMessage(ci);
+        cmdYell("EartH", message);
+    }
+
+    //List the who of a game.   Who also works, but does not accept game number as the IGS client expects.
+    void cmdAll(int gameID)
+    {
+
     }
 
     void cmdTell(string who, string message)
@@ -299,6 +334,15 @@ class IGSCommandHandler
     void cmdGames()
     {
         ci.send(IGS_CODES.GAMES, "[##]  white name [ rk ]      black name [ rk ] (Move size H Komi BY FR) (###)");
+        /+foreach(game; games)
+         {
+
+         }+/
+    }
+
+    void cmdObserver(int gameID)
+    {
+        getGame(gameID).subscribe(ci);
     }
 
     //Are you there?

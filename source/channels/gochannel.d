@@ -26,6 +26,8 @@ struct PlayerInfo
 
 ///Specialized channel for validating moves.
 ///Should support multi-color go.
+///
+///TODO: Synchronize movement and loading sgfs.
 class GoChannel : ChatChannel  //GoChannels are also chat channels.
 {
     static shared uint gameIDCounter = 0;
@@ -74,6 +76,7 @@ class GoChannel : ChatChannel  //GoChannels are also chat channels.
         logDebug("Unregistering game!");
         unregisterGame(this);
     }
+   
 
     this(Connection owner, int colors = 2)
     {
@@ -103,10 +106,47 @@ class GoChannel : ChatChannel  //GoChannels are also chat channels.
     void pushSgfData(string sgfData)
     {
         if(head) {
-            curNode = curNode.appendChild(new sgf.parser.SGFParser(sgfData).root);
+            curNode.appendChild(new sgf.parser.SGFParser(sgfData).root);
         } else {
             head = new sgf.parser.SGFParser(sgfData).root;
             curNode = head;
+        }
+    }
+
+    //Load a next child, and the appropriate board positions.
+    void gotoChild(int child)
+    {
+        //TODO: make this method more robust.
+        enforce(child >= 0 && child < curNode.Children.length, "Invalid SGF Path sent.");
+        curNode = curNode.Children[child];
+
+        foreach(prop; curNode.Properties.byKey().filter!((k) => colorProperties.countUntil(k) != -1))
+        {
+            foreach(val; curNode.Properties[prop])
+            {
+                board.playStone(Position(val), getStoneColor(prop));
+            }
+        }
+
+        foreach(prop; curNode.Properties.byKey().filter!((k) => ["AW", "AB"].countUntil(k) != -1))
+        {
+            foreach(val; curNode.Properties[prop])
+            {
+                board[Position(val)] = getStoneColor(prop[1..$]);
+            }
+        }
+    }
+
+    //TODO: send an appropiate message to all clients to navigate in their sgfs.
+    void gotoPath(int[] path)
+    {
+        curNode = head;
+        board = new GobanImpl!(AGARules); //reset board
+
+
+        foreach(child; path)
+        {
+            gotoChild(child);
         }
     }
 
@@ -114,7 +154,6 @@ class GoChannel : ChatChannel  //GoChannels are also chat channels.
     void playMove(Connection player, PlayMoveMessage move)
     {
         enforce(started, "Game not started!");
-
 
         if(player == players[curPlayer].conn && move.position)
         {
@@ -144,10 +183,23 @@ class GoChannel : ChatChannel  //GoChannels are also chat channels.
         }
     }
 
+    public void undo()
+    {
+        curNode = curNode.Parent; //Backup
+        board.revert(); //Undo one.
+    }
+
     void readyPlayer(Connection player)
     {
         foreach( ref p; players.filter!(curPlayer => curPlayer.conn == player))
             p.ready = true;
+    }
+
+    void setPlayerPosition(string player, size_t pos)
+    {
+        enforce( pos >= 0 && pos <= players.length, "Invalid player position!");
+
+        players[pos..pos+1].swapRanges(players.filter!(a => a.conn.userinfo.Username.toUpper == player.toUpper));
     }
 
     void addPlayer(string playerName)
@@ -159,11 +211,7 @@ class GoChannel : ChatChannel  //GoChannels are also chat channels.
         }
     }
 
-    void setPlayerPosition(string player, size_t pos)
-    {
-        players[pos..pos+1].swapRanges(players.filter!(a => a.conn.userinfo.Username.toUpper == player.toUpper));
-    }
-
+    ///Use this if somebody changes a setting.  Should unready all players.
     void removePlayer(string playerName)
     {
         if(started) return;

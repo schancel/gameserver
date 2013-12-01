@@ -84,7 +84,6 @@ class AGARules : Rules
         captures += doCapture(Position(pt.x, pt.y+1));
 
         // check for suicide
-        //TODO: Check for suicide
         captures -= this.doCapture(pt);
 
         board.addCaptures(color, captures);

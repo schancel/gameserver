@@ -1,9 +1,14 @@
-module util.games;
+module util.challenges;
+
+//TODO: Make this work.  Need timers on challenges so they go away after awhile. ?
 
 import channels.gochannel;
+
+
 import std.exception :enforce;
 
-private __gshared GoChannel[int] gamesByID;
+/+
+private __gshared FixedRingBuffer([int] gamesByID;
 private __gshared GoChannel[string] games;
 
 private __gshared Object gameMutex = new Object();
@@ -19,7 +24,7 @@ GoChannel getGame(int id)
             enforce(false, "No such game.");
         }
     }
-
+    
     assert(0, "Shouldn't be here");
 }
 
@@ -42,7 +47,7 @@ void registerGame(GoChannel chan)
     {
         enforce(chan.gameID !in gamesByID, "Game already exists?  How is this possible?");
         enforce(chan.name !in games, "Game already exists?  How is this possible?");
-
+        
         gamesByID[chan.gameID] = chan;
         games[chan.name] = chan;
     }
@@ -57,7 +62,7 @@ void unregisterGame(GoChannel chan)
         } else {
             enforce(false, "No such game.");
         }
-
+        
         if( auto p = chan.name in games ) {
             games.remove(chan.name);
         } else {
@@ -65,3 +70,4 @@ void unregisterGame(GoChannel chan)
         }
     }
 }
++/

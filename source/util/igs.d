@@ -3,6 +3,8 @@ module util.igs;
 import std.conv;
 import std.exception;
 
+//Move format does not include the letter "i".  What a pain in the ass.
+
 string igsToSgf(string pos)
 {
     string sgfPos;

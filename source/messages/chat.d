@@ -59,9 +59,9 @@ class ChatMessage : Message
 class PrivateMessage : Message
 {
     string target;
-    string who;
     string message;
-    
+    string who;
+
     this() pure {}
     
     this(string target, string msg, string who = null ) pure
@@ -78,6 +78,7 @@ class PrivateMessage : Message
         logDebug("PM <%s> --> <%s> : %s", target, who, message );
         try {
             sendToUser(target, this);
+            ci.send(this);
         } catch (Exception e)
         {
             //TODO: Queue up messages in database.
