@@ -18,21 +18,28 @@ import messages.core;
 @OpCoder(99)
 class ChallengeMessage : Message
 {
-    string challenger;
-    string challengee;
+    string black;
+    string white;
     int time; //Total time in minutes.
     int byotime; //Time to play 25 moves.
-    
-    this()
+
+    this() {}
+
+    this(string blackPlayer, string whitePlayer, int time, int byotime)
     {
+        this.black = blackPlayer;
+        this.white = whitePlayer;
+        this.time = time;
+        this.byotime = byotime;
     }
 
     override void handleMessage(Connection ci)
     {
     }
     
-    mixin messages.MessageMixin!("challenger", "challengee");
+    mixin messages.MessageMixin!("black", "white", "time", "byotime");
 }
+
 
 
 ///Send this message to start a new game.

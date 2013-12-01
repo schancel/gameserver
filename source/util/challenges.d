@@ -2,72 +2,84 @@ module util.challenges;
 
 //TODO: Make this work.  Need timers on challenges so they go away after awhile. ?
 
-import channels.gochannel;
-
-
+import std.algorithm;
 import std.exception :enforce;
+import std.string;
+import std.datetime;
 
-/+
-private __gshared FixedRingBuffer([int] gamesByID;
-private __gshared GoChannel[string] games;
+import util.challenges;
+import messages.game;
 
-private __gshared Object gameMutex = new Object();
-
-///Get a channel of a particular type, if possible.  Possibly throws invalidcastexception.
-GoChannel getGame(int id)
-{
-    synchronized(gameMutex) 
+///Structure to allow us to look up challenges in an AA.
+struct ChallengeIndex {
+    string player1; //Color independant.  We will look at the ChallengeMessage to find that out.
+    string player2;
+    SysTime issued; //use this to clean up old challenges.
+    
+    this(string player1, string player2)
     {
-        if( auto p = id in gamesByID ) {
+        //Players need to be in the correct order for opCmp to work.
+        this.player1 = min(player1.toUpper,player2.toUpper);
+        this.player2 = max(player2.toUpper, player1.toUpper);
+        issued = Clock.currTime();
+    }
+
+    hash_t toHash() const nothrow @safe 
+    {
+        return typeid(string).getHash(&this.player1) ^ typeid(string).getHash(&this.player2) ;
+    }
+    
+    const bool opEquals(ref const ChallengeIndex s)
+    {
+        return this.player1 == s.player1 && this.player2 == s.player2;
+    }
+
+    //Implement lexicographical order.
+    const int opCmp(ref const ChallengeIndex s)
+    {
+        auto firstCmp = this.player1.cmp(s.player1);
+        return firstCmp ? firstCmp : this.player2.cmp(s.player2);
+    }
+}
+
+private static __gshared ChallengeMessage[ChallengeIndex] challenges;
+private static __gshared Object challengeMutex = new Object();
+
+//TODO: Clean up old challenges via a task or something.
+
+
+ChallengeMessage getChallege(string player1, string player2)
+{
+    synchronized(challengeMutex) 
+    {
+        if( auto p = ChallengeIndex(player1,player2) in challenges ) {
             return *p;
         }  else {
-            enforce(false, "No such game.");
+            return null;
         }
     }
     
     assert(0, "Shouldn't be here");
 }
 
-GoChannel getGame(string game)
+void registerChallenge(ChallengeMessage msg)
 {
-    synchronized(gameMutex) 
+    synchronized(challengeMutex) 
     {
-        if( auto p = game in games ) {
-            return *p;
-        }  else {
-            enforce(false, "No such game.");
-        }
-    }
-    assert(0, "Shouldn't be here");
-}
+        auto idx = ChallengeIndex(msg.white,msg.black);
+        enforce(idx !in challenges, "Game already exists?  How is this possible?");
 
-void registerGame(GoChannel chan)
-{
-    synchronized(gameMutex) 
-    {
-        enforce(chan.gameID !in gamesByID, "Game already exists?  How is this possible?");
-        enforce(chan.name !in games, "Game already exists?  How is this possible?");
-        
-        gamesByID[chan.gameID] = chan;
-        games[chan.name] = chan;
+        challenges[idx] == msg;
     }
 }
 
-void unregisterGame(GoChannel chan)
+void registerChallenge(ChallengeMessage msg)
 {
-    synchronized(gameMutex) 
+    synchronized(challengeMutex) 
     {
-        if( auto p = chan.gameID in gamesByID ) {
-            gamesByID.remove(chan.gameID);
-        } else {
-            enforce(false, "No such game.");
-        }
+        auto idx = ChallengeIndex(msg.white,msg.black);
+        enforce(idx in challenges, "No such challenge.");
         
-        if( auto p = chan.name in games ) {
-            games.remove(chan.name);
-        } else {
-            enforce(false, "No such game.");
-        }
+        challenges.remove(idx);
     }
 }
-+/

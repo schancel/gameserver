@@ -1,6 +1,7 @@
 {
+	"mySQLDatabase": "sujigo",
+	"domainName": "sujigo.com",
 	"mySQLUsername": "sujigo",
 	"mySQLHostname": "localhost",
-	"mySQLDatabase": "sujigo",
 	"mySQLPassword": "f00b4r"
 }

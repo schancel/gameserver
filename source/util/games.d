@@ -3,8 +3,8 @@ module util.games;
 import channels.gochannel;
 import std.exception :enforce;
 
-private __gshared GoChannel[int] gamesByID;
-private __gshared GoChannel[string] games;
+private static __gshared GoChannel[int] gamesByID;
+private static __gshared GoChannel[string] games;
 
 private __gshared Object gameMutex = new Object();
 
