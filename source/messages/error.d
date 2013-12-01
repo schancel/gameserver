@@ -23,6 +23,7 @@ class ErrorMessage : Message
     
     this(string message)
     {
+        this.message = message;
     }
     
     mixin messages.MessageMixin!("message");
