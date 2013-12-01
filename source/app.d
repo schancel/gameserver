@@ -33,7 +33,13 @@ static this()
             .get("/js/rpc_bindings.js", (req, res) { static immutable string jsBindings = JavascriptBindings(); res.writeBody(jsBindings); })
             .get("/", staticRedirect("/index.html"));
 
-    setLogLevel(LogLevel.debugV);
+    debug
+    {
+        setLogLevel(LogLevel.debugV);
+    } else {
+        setLogLevel(LogLevel.info);
+    }
+
     setLogFile("log.txt");
 
     auto settings = new HTTPServerSettings;
