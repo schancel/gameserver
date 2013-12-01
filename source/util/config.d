@@ -6,51 +6,48 @@ import vibe.data.json;
 import vibe.core.log;
 
 const Json defaults;
+static const string CONFIG_FILE = "config.json";
 
-const string defaultConfig = `{
-    "domainName": "sujigo.com",
-    "mySQLHostname": "localhost",
-    "mySQLDatabase": "sujigo",
-    "mySQLUsername": "sujigo",
-    "mySQLPassword": "f00b4r"
-}`;
+static private __gshared Configuration __config;
 
-class Config
+Configuration Config() {
+    if(!__config) //Lazy loading
+        __config = new Configuration(CONFIG_FILE);
+
+    return __config;
+}
+
+class Configuration
 {
-    static const string CONFIG_FILE = "config.json";
+    //Configuration properties.
+    @optional string domainName = "sujigo.com";
+    @optional string mySQLHostname = "localhost";
+    @optional string mySQLDatabase = "sujigo";
+    @optional string mySQLUsername = "sujigo";
+    @optional string mySQLPassword = "f00b4r";
 
-	this()
+    this() {}
+
+    this(string configFile)
 	{
-		// Constructor code
-	}
+        load(configFile);
+    }
 
-	public static Json properties;
-
-	public static void load()
+	public void load(string configFile = CONFIG_FILE)
 	{
         if( exists(CONFIG_FILE) )
         {
-            properties = parseJsonString(readText(CONFIG_FILE));
+            Json jsonConfig = parseJsonString(readText(configFile));
+            deserializeJson(this, jsonConfig);
             logDebug("Loaded Config");
         } else {
             logDebug("Using default config");
-            properties = parseJsonString(defaultConfig);
         }
 	}
 
-    public static auto opDispatch(string name)()
+    public void save()
     {
-        auto prop =  properties[name];
-        if( prop.type == Json.Type.undefined )
-        {
-            return defaults[name];
-        } else {
-            return prop;
-        }
-    }
-
-    public static void save()
-    {
+        Json properties = serializeToJson(this);
         auto file = File(CONFIG_FILE, "w");
         auto writer = file.lockingTextWriter();
         writer.writePrettyJsonString(properties);
@@ -65,7 +62,6 @@ unittest
 
 static this()
 {
-    defaults = parseJsonString(defaultConfig);
     Config.load();
     Config.save();
 }

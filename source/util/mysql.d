@@ -15,10 +15,10 @@ public class Database
 	@property private static auto mdb()
 	{
         if( !_mdb )
-            _mdb = new MysqlDB(Config.mySQLHostname.get!string(),
-                              Config.mySQLUsername.get!string(),
-                              Config.mySQLPassword.get!string(),
-                              Config.mySQLDatabase.get!string()
+            _mdb = new MysqlDB(Config.mySQLHostname,
+                              Config.mySQLUsername,
+                              Config.mySQLPassword,
+                              Config.mySQLDatabase
                               );
 
         return _mdb;
