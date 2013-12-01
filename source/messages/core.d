@@ -185,7 +185,7 @@ string JavascriptBindings() {
 
 alias hack(alias T) = T; //Hack to be able to store __traits stuff in an alias
 
-alias AllMessages = GetMessagesFromModules!( "messages.chat", "messages.auth", "messages.channel", "messages.game" );
+alias AllMessages = GetMessagesFromModules!( "messages.chat", "messages.auth", "messages.channel", "messages.game", "messages.error", "messages.user");
 
 //Accepts a tuple of strings which should be modulenames for the modules which contain messages.
 template GetMessagesFromModules(Modules...)
