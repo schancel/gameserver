@@ -2,18 +2,13 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 
-DROP SCHEMA IF EXISTS `sujigo` ;
 CREATE SCHEMA IF NOT EXISTS `sujigo` DEFAULT CHARACTER SET utf8 ;
-SHOW WARNINGS;
 USE `sujigo` ;
 
 -- -----------------------------------------------------
--- Table `accounts`
+-- Table `sujigo`.`accounts`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `accounts` ;
-
-SHOW WARNINGS;
-CREATE TABLE IF NOT EXISTS `accounts` (
+CREATE TABLE IF NOT EXISTS `sujigo`.`accounts` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(16) NOT NULL,
   `pass` VARCHAR(256) NOT NULL DEFAULT '',
@@ -29,18 +24,13 @@ ENGINE = InnoDB
 AUTO_INCREMENT = 4
 DEFAULT CHARACTER SET = latin1;
 
-SHOW WARNINGS;
-CREATE UNIQUE INDEX `USERNAME` ON `accounts` (`username` ASC);
+CREATE UNIQUE INDEX `USERNAME` ON `sujigo`.`accounts` (`username` ASC);
 
-SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `titles`
+-- Table `sujigo`.`titles`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `titles` ;
-
-SHOW WARNINGS;
-CREATE TABLE IF NOT EXISTS `titles` (
+CREATE TABLE IF NOT EXISTS `sujigo`.`titles` (
   `title_id` INT(11) NOT NULL,
   `title_text` VARCHAR(64) NULL DEFAULT NULL,
   `unique` TINYINT(1) NOT NULL DEFAULT '0',
@@ -48,75 +38,60 @@ CREATE TABLE IF NOT EXISTS `titles` (
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
 
-SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `awarded_titles`
+-- Table `sujigo`.`awarded_titles`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `awarded_titles` ;
-
-SHOW WARNINGS;
-CREATE TABLE IF NOT EXISTS `awarded_titles` (
+CREATE TABLE IF NOT EXISTS `sujigo`.`awarded_titles` (
   `accounts_id` INT(11) NOT NULL,
   `title_id` INT(11) NOT NULL,
   PRIMARY KEY (`accounts_id`, `title_id`),
   CONSTRAINT `USERID`
     FOREIGN KEY (`accounts_id`)
-    REFERENCES `accounts` (`id`)
+    REFERENCES `sujigo`.`accounts` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT `TITLEID`
     FOREIGN KEY (`title_id`)
-    REFERENCES `titles` (`title_id`)
+    REFERENCES `sujigo`.`titles` (`title_id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
 
-SHOW WARNINGS;
-CREATE INDEX `TITLEID_idx` ON `awarded_titles` (`title_id` ASC);
+CREATE INDEX `TITLEID_idx` ON `sujigo`.`awarded_titles` (`title_id` ASC);
 
-SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `relationships`
+-- Table `sujigo`.`relationships`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `relationships` ;
-
-SHOW WARNINGS;
-CREATE TABLE IF NOT EXISTS `relationships` (
+CREATE TABLE IF NOT EXISTS `sujigo`.`relationships` (
   `accounts_id` INT(11) NOT NULL,
   `buddy_id` INT(11) NOT NULL,
   `type` INT(11) NOT NULL,
   PRIMARY KEY (`accounts_id`, `buddy_id`),
   CONSTRAINT `fk_accounts_has_accounts_accounts1`
     FOREIGN KEY (`accounts_id`)
-    REFERENCES `accounts` (`id`)
+    REFERENCES `sujigo`.`accounts` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_accounts_has_accounts_accounts2`
     FOREIGN KEY (`buddy_id`)
-    REFERENCES `accounts` (`id`)
+    REFERENCES `sujigo`.`accounts` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = latin1;
 
-SHOW WARNINGS;
-CREATE INDEX `fk_accounts_has_accounts_accounts2_idx` ON `relationships` (`buddy_id` ASC);
+CREATE INDEX `fk_accounts_has_accounts_accounts2_idx` ON `sujigo`.`relationships` (`buddy_id` ASC);
 
-SHOW WARNINGS;
-CREATE INDEX `fk_accounts_has_accounts_accounts1_idx` ON `relationships` (`accounts_id` ASC);
+CREATE INDEX `fk_accounts_has_accounts_accounts1_idx` ON `sujigo`.`relationships` (`accounts_id` ASC);
 
-SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `user_messages`
+-- Table `sujigo`.`user_messages`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `user_messages` ;
-
-SHOW WARNINGS;
-CREATE TABLE IF NOT EXISTS `user_messages` (
+CREATE TABLE IF NOT EXISTS `sujigo`.`user_messages` (
   `accounts_id` INT(11) NOT NULL,
   `sender_id` INT(11) NOT NULL,
   `message_type` TINYINT(3) NULL DEFAULT NULL,
@@ -124,33 +99,26 @@ CREATE TABLE IF NOT EXISTS `user_messages` (
   PRIMARY KEY (`accounts_id`),
   CONSTRAINT `fk_user_messages_accounts1`
     FOREIGN KEY (`sender_id`)
-    REFERENCES `accounts` (`id`)
+    REFERENCES `sujigo`.`accounts` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_user_messages_accounts2`
     FOREIGN KEY (`accounts_id`)
-    REFERENCES `accounts` (`id`)
+    REFERENCES `sujigo`.`accounts` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8;
 
-SHOW WARNINGS;
-CREATE INDEX `fk_user_messages_accounts2_idx` ON `user_messages` (`accounts_id` ASC);
+CREATE INDEX `fk_user_messages_accounts2_idx` ON `sujigo`.`user_messages` (`accounts_id` ASC);
 
-SHOW WARNINGS;
-CREATE INDEX `fk_user_messages_accounts1` ON `user_messages` (`sender_id` ASC);
+CREATE INDEX `fk_user_messages_accounts1` ON `sujigo`.`user_messages` (`sender_id` ASC);
 
-SHOW WARNINGS;
 USE `sujigo` ;
 
 -- -----------------------------------------------------
 -- function auth_account
 -- -----------------------------------------------------
-
-USE `sujigo`;
-DROP function IF EXISTS `auth_account`;
-SHOW WARNINGS;
 
 DELIMITER $$
 USE `sujigo`$$
@@ -164,15 +132,12 @@ BEGIN
 		RETURN true;
 	END IF;
 END$$
-SHOW WARNINGS;
+
+DELIMITER ;
 
 -- -----------------------------------------------------
 -- procedure create_account
 -- -----------------------------------------------------
-
-USE `sujigo`;
-DROP procedure IF EXISTS `create_account`;
-SHOW WARNINGS;
 
 DELIMITER $$
 USE `sujigo`$$
@@ -186,7 +151,8 @@ BEGIN
 	INSERT INTO accounts (username, pass, salt)
 		VALUES (P_username, V_PASS, V_SALT);
 END$$
-SHOW WARNINGS;
+
+DELIMITER ;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
