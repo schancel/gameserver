@@ -59,6 +59,7 @@ class ConnectionBase : Connection
         logDebug("%d: disconnected", curThread);
         foreach( sub; subscriptions.dup.byKey() ) //Dup is necessary, since unsubscribing removes from the AA.
         {
+			sendToChannel(sub.name, new PartMessage(sub.name, _userinfo.Username));
             sub.unsubscribe(this);
         }
         userinfo = null;
