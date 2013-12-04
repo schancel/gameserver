@@ -51,7 +51,7 @@ class ConnectionBase : Connection
     this()
     {
         active = true;
-        curThread = Task.getThis().toHash(); //TODO: Fix this
+        curThread = Task.getThis().toHash();
     }
 
     ~this()
@@ -59,7 +59,7 @@ class ConnectionBase : Connection
         logDebug("%d: disconnected", curThread);
         foreach( sub; subscriptions.dup.byKey() ) //Dup is necessary, since unsubscribing removes from the AA.
         {
-			sendToChannel(sub.name, new PartMessage(sub.name, _userinfo.Username));
+			sendToChannel(sub.name, new PartMessage(sub.name, userinfo.Username));
             sub.unsubscribe(this);
         }
         userinfo = null;

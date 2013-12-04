@@ -62,6 +62,14 @@ void sendToChannel( string channelName, Message m)
     }
 }
 
+T channelList(T : Channel)()
+{   
+    synchronized(challengeMutex) 
+    {
+        return channels.keys.filter!(x=>channels[x].classinfo == typeid(T)).dup();
+    }
+}
+
 ///Abstract channel class.  Other types of channels should derive from this.
 abstract class Channel
 {
