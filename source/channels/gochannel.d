@@ -57,7 +57,7 @@ class GoChannel : ChatChannel  //GoChannels are also chat channels.
 
     package this()
     {
-        gameID = ++gameIDCounter;
+        gameID = core.atomic.atomicOp!"+="(gameIDCounter, 1);
         super(randomUUID().toString);
 
         registerGame(this);

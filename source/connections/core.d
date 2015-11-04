@@ -44,19 +44,19 @@ class ConnectionBase : Connection
         bool active;
         UserInfo _userinfo;
         bool[Channel] subscriptions;
-        ulong curThread;
+        Task curThread;
         bool[string] prefs;
     }
 
     this()
     {
         active = true;
-        curThread = Task.getThis().toHash();
+        curThread = Task.getThis();
     }
 
     ~this()
     {
-        logDebug("%d: disconnected", curThread);
+        logDebug("%s: disconnected", curThread);
         foreach( sub; subscriptions.dup.byKey() ) //Dup is necessary, since unsubscribing removes from the AA.
         {
 			sendToChannel(sub.name, new PartMessage(sub.name, userinfo.Username));

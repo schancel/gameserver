@@ -40,14 +40,15 @@ class ChatMessage : Message
     override bool supportsIGS() { return true; };
     override void writeIGS(OutputStream st)
     {
-
-        st.put((cast(int)IGS_CODES.SHOUT).to!string);
-        st.put( " !");
-        st.put(who);
-        st.put("!: <");
-        st.put(channel );
-        st.put("> " );
-        st.put(message);
+        import vibe.stream.wrapper;
+        auto stor = StreamOutputRange(st);
+        stor.put((cast(int)IGS_CODES.SHOUT).to!string);
+        stor.put( " !");
+        stor.put(who);
+        stor.put("!: <");
+        stor.put(channel );
+        stor.put("> " );
+        stor.put(message);
         st.flush();
     }
     
@@ -89,11 +90,13 @@ class PrivateMessage : Message
     override bool supportsIGS() { return true; };
     override void writeIGS(OutputStream st)
     {
-        st.put( (cast(int)IGS_CODES.TELL).to!string );
-        st.put(" *");
-        st.put(who);
-        st.put("* ");
-        st.put(message);
+        import vibe.stream.wrapper;
+        auto stor = StreamOutputRange(st);
+        stor.put( (cast(int)IGS_CODES.TELL).to!string );
+        stor.put(" *");
+        stor.put(who);
+        stor.put("* ");
+        stor.put(message);
         st.flush();
     }
     

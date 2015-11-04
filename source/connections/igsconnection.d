@@ -45,7 +45,7 @@ class IGSConnection : ConnectionBase
 
     void readLoop()
     {
-        logDebug("%d: IGS ReadTask Started", curThread);
+        logDebug("%s: IGS ReadTask Started", curThread);
         try
         { 
             while(socket.connected && active)
@@ -67,7 +67,7 @@ class IGSConnection : ConnectionBase
     
     private void writeLoop()
     {
-        logDebug("%d: IGS WriteTask Started", curThread);
+        logDebug("%s: IGS WriteTask Started", curThread);
         try {
             while(active)
             {

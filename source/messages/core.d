@@ -7,6 +7,7 @@ import std.exception;
 import std.string : startsWith;
 
 import vibe.core.stream;
+import vibe.stream.wrapper;
 
 public import msgpack;
 
@@ -106,7 +107,8 @@ abstract class Message
 ///This function serializes messages to a Vibe-D OutputStream with the first item being the opCode for the message type.
 void serialize(T)(OutputStream st, inout(T) msg) if ( is(T == Message) )
 {
-    st.put( msg.opCode ); 
+    auto stor = StreamOutputRange(st);
+    stor.put( msg.opCode ); 
     switch( msg.opCode ){
         foreach( messageType; AllMessages){
             case messageType.opCodeStatic:
@@ -124,8 +126,9 @@ endSwitch:
 ///See above,  this is a specialized version for when we already know the type at compile-time.
 void serialize(T)(OutputStream st, inout(T) msg) if ( is(T : Message) && !is(T == Message) )
 {
+    auto stor = StreamOutputRange(st);
     ubyte[] ret;
-    st.put(msg.opCode); 
+    stor.put(msg.opCode); 
     st.write(msgpack.pack(msg));
 }
 

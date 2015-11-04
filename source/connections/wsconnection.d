@@ -63,7 +63,7 @@ class WSConnection : ConnectionBase
 
     private void writeLoop()
     {
-        logDebug("%d: writetask", curThread);
+        logDebug("%s: writetask", curThread);
         try {
             while(active)
             {

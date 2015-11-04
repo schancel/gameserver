@@ -127,15 +127,17 @@ class WhoListMessage : Message
 
     override void writeIGS(OutputStream st)
     {
+        import vibe.stream.wrapper;
+        auto stor = StreamOutputRange(st);
         int line = 0;
-        st.put("27  Info       Name       Idle   Rank |  Info       Name       Idle   Rank");
+        stor.put("27  Info       Name       Idle   Rank |  Info       Name       Idle   Rank");
         foreach(i, who; whoList)
         {
             if( i % 2 == 1)
-                st.put("  |");
+                stor.put("  |");
             else 
-                st.put("\r\n27 ");
-            st.put("    --   -- " ~ who ~ "    0s     NR");
+                stor.put("\r\n27 ");
+            stor.put("    --   -- " ~ who ~ "    0s     NR");
         }
         st.flush();
     }

@@ -11,13 +11,13 @@ import util.config;
 
 import messages.core;
 
-void initateWebSocket(WebSocket ws) {
+void initateWebSocket(scope WebSocket ws) {
     scope auto ci = new WSConnection(ws);
     
     ci.spawn();
 }
 
-void initiateTelnet(TCPConnection conn)
+void initiateTelnet(scope TCPConnection conn)
 {
     scope auto ci = new IGSConnection(conn);
 
