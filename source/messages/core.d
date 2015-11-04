@@ -49,7 +49,7 @@ mixin template MessageMixin(Args...)
                 return tra.opCode;
             }
         }
-        return 0;
+        assert(false, "Invalid Message Type");
     }
 
     ///Generate a javascript RPC stub for the a class.
